@@ -1,0 +1,11 @@
+[
+  {
+    "input_text": "Animating technical concepts is traditionally pretty tedious since it can be difficult to make the animations precise enough to convey them accurately. Manim relies on Python\u2019s simplicity to generate animations programmatically, making it convenient to specify exactly how each one should run.",
+    "input_data": {
+      "input_text": "Animating technical concepts is traditionally pretty tedious since it can be difficult to make the animations precise enough to convey them accurately. Manim relies on Python\u2019s simplicity to generate animations programmatically, making it convenient to specify exactly how each one should run.",
+      "service": "gtts"
+    },
+    "original_audio": "animating-technical-concepts-is-traditionally-b2cac437.mp3",
+    "final_audio": "animating-technical-concepts-is-traditionally-b2cac437.mp3"
+  }
+]
