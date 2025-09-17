@@ -11,7 +11,7 @@ class NarrationAudioError(NarrationError):
     pass
 
 
-def get_duration(path: Path | str) -> float | None:
+def get_duration(path: Path | str) -> float:
     """Get the duration of an audio file.
 
     Parameters
@@ -21,7 +21,12 @@ def get_duration(path: Path | str) -> float | None:
 
     Returns
     -------
-    Duration of audio file in seconds. If unavailable or empty, returns None.
+    Duration of the audio file in seconds.
+
+    Raises
+    ------
+    NarrationAudioError
+        if sox encounters a problem or returns `None`.
     """
     try:
         duration: float | None = sox.file_info.duration(path)
@@ -29,4 +34,8 @@ def get_duration(path: Path | str) -> float | None:
         raise NarrationAudioError(
             f"There is a problem with the audio file: `{path}`"
         ) from e
+    if duration is None:
+        raise NarrationAudioError(
+            f"Unable to get the duration of the audio file: `{path}`."
+        )
     return duration
