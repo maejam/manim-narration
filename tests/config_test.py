@@ -57,3 +57,18 @@ def test_placeholders_interpolation_in_config_values(user_conf):
 def test_accessing_config_value_with_inexistant_placeholder_raises_KeyError(user_conf):
     with pytest.raises(NarrationConfigPlaceHolderError, match="not_a_manim_config_key"):
         user_conf.other_key
+
+
+def test_get_all_keys_in_section(user_conf):
+    assert user_conf.get_all_keys_in_section("TEST2") == {
+        "yet_another_key": "yet_another_value",
+        "cache_dir": "not the good one",
+    }
+
+
+def test_get_all_keys_in_section_after_programmatically_changing_key(user_conf):
+    user_conf.yet_another_key = 42
+    assert user_conf.get_all_keys_in_section("TEST2") == {
+        "yet_another_key": "42",
+        "cache_dir": "not the good one",
+    }

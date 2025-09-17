@@ -29,7 +29,7 @@ class ManimNarrationConfig:
     script with the scene is located) and load it if present. If not, load the file in
     the library `src` directory. The user can always override any key programmatically
     by importing the `config` object and setting a new value with the dot notation
-    (e.g. `config.cache_dir`). The name of the custom config file should be
+    (e.g. `config.cache_dir`). The name of the custom config file, if any, should be
     `manim_narration.cfg`. When using a custom config file, THERE IS NO FALLBACK for
     missing values, which means the config file should be complete or not there at all.
 
@@ -43,8 +43,9 @@ class ManimNarrationConfig:
     """
 
     def __init__(self, filename: str) -> None:
-        self._config = self.get_config_file(filename)
-        self._filename = filename
+        self.__dict__["_config"] = self.get_config_file(filename)
+        self.__dict__["_filename"] = filename
+        self.__dict__["sections"] = self._config.sections()
 
     def get_config_file(self, filename: str) -> ConfigParser:
         """Load the config file.
@@ -84,6 +85,13 @@ class ManimNarrationConfig:
                     Check your `{CONFIG_FILE_NAME}` file."""
             )
 
+    def __setattr__(self, name: str, value: t.Any, /) -> None:
+        for section in self.__dict__["sections"]:
+            if name in self._config[section]:
+                self._config[section][name] = str(value)
+            else:
+                super().__setattr__(name, value)
+
     def resolve_placeholders(self, string_: str) -> str:
         """Replace the placeholders with the values from the manim config.
 
@@ -106,6 +114,22 @@ class ManimNarrationConfig:
                 """
             )
         return string_
+
+    def get_all_keys_in_section(self, section: str) -> dict[str, str]:
+        """Return all the keys in a given section of the config file.
+
+        Parameters
+        ----------
+        section
+            The name of the section.
+
+        Returns
+        -------
+        A dictionary mapping keys to values. All the keys and values will be strings
+        even if initially set as other types (either in the config file or
+        programmatically).
+        """
+        return dict(self._config[section])
 
 
 config = ManimNarrationConfig(CONFIG_FILE_NAME)
