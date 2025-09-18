@@ -47,6 +47,16 @@ class ManimNarrationConfig:
         self.__dict__["_filename"] = filename
         self.__dict__["sections"] = self._config.sections()
 
+    def __str__(self) -> str:
+        string_ = ""
+        for section in self.sections:
+            string_ += f" [{section}"
+            keys = self.get_all_keys_in_section(section)
+            for k, v in keys.items():
+                string_ += f" | {': '.join([k, v])}"
+            string_ += "]"
+        return f"Config:{string_}"
+
     def get_config_file(self, filename: str) -> ConfigParser:
         """Load the config file.
 
