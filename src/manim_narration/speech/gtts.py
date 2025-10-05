@@ -45,7 +45,7 @@ class GTTSService(SpeechService):
                 lang: {self.lang},
                 tld: {self.tld},
                 {self.kwargs}.
-                See the documentation: <https://cloud.google.com/translate/docs/languages>."""
+                See the documentation: <https://gtts.readthedocs.io/en/latest/>."""
             ) from e
 
         try:
@@ -54,7 +54,7 @@ class GTTSService(SpeechService):
             raise SpeechServiceError(
                 f"""gTTS gave an error when saving the file.
                 audio file path: {audio_file_path}
-                See the documentation: <https://cloud.google.com/translate/docs/languages>."""
+                See the documentation: <https://gtts.readthedocs.io/en/latest/>."""
             ) from e
 
         return audio_file_path

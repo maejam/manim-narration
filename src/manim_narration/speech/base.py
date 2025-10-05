@@ -114,6 +114,8 @@ class SpeechService(ABC):
         audio_file_path = self._get_path_to_file_in_cache(speech_data, filename)
         if audio_file_path.exists():
             return audio_file_path
+        else:
+            audio_file_path.parent.mkdir(parents=True)
 
         # Preprocessing
         parser = tags.TagParser(config.tags.all_tags)
