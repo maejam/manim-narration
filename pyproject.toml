@@ -17,6 +17,8 @@ dev = [
     "mypy>=1.18.2",
     "pytest>=8.4.2",
 ]
+
+[project.optional-dependencies]
 gtts = [
     "gtts>=2.5.4",
 ]
