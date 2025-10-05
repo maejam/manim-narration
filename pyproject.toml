@@ -56,7 +56,7 @@ filterwarnings = [
 
 [tool.coverage.run]
 branch = true
-source = ["manim_narration", "tests"]
+source = ["src/manim_narration", "tests"]
 
 [tool.mypy]
 files = ["src"]
