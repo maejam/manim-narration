@@ -141,7 +141,9 @@ class PlaceholderModel(BaseModel):
     """
 
     placeholders: t.Mapping[str, t.Any] = Field(default={}, exclude=True, repr=False)
-    model_config = ConfigDict(validate_default=True, validate_assignment=True)
+    model_config = ConfigDict(
+        extra="forbid", validate_default=True, validate_assignment=True
+    )
 
     def __init__(self, placeholders: t.Mapping[str, t.Any], **data: t.Any) -> None:
         for field_name, field_info in type(self).model_fields.items():
