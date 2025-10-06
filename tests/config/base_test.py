@@ -16,14 +16,13 @@ from manim_narration.config.base import (
 
 @pytest.fixture
 def tmp_files(tmp_path_factory):
-    """
-    Returns a dict of files within tmp dirs:
-        {
-            "toml_home": Path().home() / CONFIG_FILE_NAME,
-            "toml_cwd":  Path().cwd() / CONFIG_FILE_NAME",
-            "dotenv": Path().cwd() / ".env",
-            "pyproj": Path().cwd() / "pyproject.toml"
-        }
+    """Return a dict of files within tmp dirs:
+    {
+        "toml_home": Path().home() / CONFIG_FILE_NAME,
+        "toml_cwd":  Path().cwd() / CONFIG_FILE_NAME",
+        "dotenv": Path().cwd() / ".env",
+        "pyproj": Path().cwd() / "pyproject.toml"
+    }
     """
     home_dir = tmp_path_factory.mktemp("home_dir")
     cwd_dir = tmp_path_factory.mktemp("cwd_dir")
@@ -43,6 +42,22 @@ def tmp_files(tmp_path_factory):
 
     Path.home = original_home
     Path.cwd = original_cwd
+
+
+@pytest.fixture
+def env_vars():
+    """Define and cleanup environment variables."""
+    os.environ["NARRATION_PROGRAMMATIC"] = "from_env_var"
+    os.environ["NARRATION_ENV_VAR"] = "from_env_var"
+    os.environ["NARRATION_NESTED__PROGRAMMATIC"] = "from_env_var"
+    os.environ["NARRATION_NESTED__ENV_VAR"] = "from_env_var"
+    yield
+
+    # Clean up env vars
+    del os.environ["NARRATION_PROGRAMMATIC"]
+    del os.environ["NARRATION_ENV_VAR"]
+    del os.environ["NARRATION_NESTED__PROGRAMMATIC"]
+    del os.environ["NARRATION_NESTED__ENV_VAR"]
 
 
 def write_toml(path: Path, data: dict[str, str]):
@@ -71,7 +86,7 @@ def prepare_data(data: dict, source: str):
 
 
 @pytest.mark.failing_assertions(likely_source_of_failure="pydantic-settings")
-def test_precedence_is_respected_with_nested_sections(tmp_files):
+def test_precedence_is_respected_with_nested_sections(tmp_files, env_vars):
     data = {
         "programmatic": "from_{source}",
         "env_var": "from_{source}",
@@ -105,11 +120,6 @@ def test_precedence_is_respected_with_nested_sections(tmp_files):
         }
     )
     write_toml(tmp_files["toml_home"], prepare_data(data, "home_toml"))
-
-    os.environ["NARRATION_PROGRAMMATIC"] = "from_env_var"
-    os.environ["NARRATION_ENV_VAR"] = "from_env_var"
-    os.environ["NARRATION_NESTED__PROGRAMMATIC"] = "from_env_var"
-    os.environ["NARRATION_NESTED__ENV_VAR"] = "from_env_var"
 
     class Nested(PlaceholderModel):
         programmatic: str = "from_default"
@@ -151,12 +161,6 @@ def test_precedence_is_respected_with_nested_sections(tmp_files):
     # assert base.nested.home_toml == "from_home_toml"
     assert base.default == "from_default"
     assert base.nested.default == "from_default"
-
-    # Clean up env vars
-    del os.environ["NARRATION_PROGRAMMATIC"]
-    del os.environ["NARRATION_ENV_VAR"]
-    del os.environ["NARRATION_NESTED__PROGRAMMATIC"]
-    del os.environ["NARRATION_NESTED__ENV_VAR"]
 
 
 @pytest.mark.parametrize(
