@@ -16,6 +16,10 @@ from pydantic_settings import (
     TomlConfigSettingsSource,
 )
 
+if t.TYPE_CHECKING:
+    from manim_narration._config.config import NarrationConfig
+
+
 DOTENV_FILE_NAME = ".env"
 CONFIG_FILE_NAME = "narration_config.toml"
 PYPROJECT_TOML_TABLE = ("tool", "manim", "narration")
@@ -266,3 +270,17 @@ class PlaceholderSettings(BaseSettings, PlaceholderModel):  # pyright: ignore[re
                 settings_cls, toml_file=candidate_paths(CONFIG_FILE_NAME)
             ),
         )
+
+
+class Config:
+    """Act like a dependency injector for the global config instance.
+
+    Any class that needs access to `config` simply needs inheriting from this class.
+    It can then access the `config` instance from the `config` property.
+    """
+
+    @property
+    def config(self) -> "NarrationConfig":
+        from manim_narration import config
+
+        return config

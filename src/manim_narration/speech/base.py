@@ -2,7 +2,8 @@ import typing as t
 from abc import ABC, abstractmethod
 from pathlib import Path
 
-from manim_narration import config, tags, utils
+from manim_narration import utils
+from manim_narration._config.base import Config
 from manim_narration.typing import SpeechData
 
 
@@ -12,7 +13,7 @@ class SpeechServiceError(utils.NarrationError):
     pass
 
 
-class SpeechService(ABC):
+class SpeechService(ABC, Config):
     """Define the functionality common to all speech services.
 
     To define a concrete SpeechService procede as follows:
@@ -33,10 +34,11 @@ class SpeechService(ABC):
 
     """
 
-    create_subcaption: bool = False
-
-    def __init__(self, **service_kwargs: t.Any) -> None:
+    def __init__(
+        self, create_subcaption: bool = False, **service_kwargs: t.Any
+    ) -> None:
         self.service_kwargs = service_kwargs
+        self.create_subcaption = create_subcaption
 
     @property
     @abstractmethod
@@ -97,7 +99,7 @@ class SpeechService(ABC):
         Parameters
         ----------
         text
-            The text to synthesize speech from.
+            The tag free text to synthesize speech from.
 
         Returns
         -------
@@ -110,7 +112,7 @@ class SpeechService(ABC):
             "service_name": type(self).__name__,
             "service_kwargs": self.service_kwargs,
         }
-        filename = config.cache.audio_file_base_name + self.file_extension
+        filename = self.config.cache.audio_file_base_name + self.file_extension
         audio_file_path = self._get_path_to_file_in_cache(speech_data, filename)
         if audio_file_path.exists():
             return audio_file_path
@@ -118,9 +120,6 @@ class SpeechService(ABC):
             audio_file_path.parent.mkdir(parents=True)
 
         # Preprocessing
-        parser = tags.TagParser(config.tags.all_tags)
-        parser.feed(text)
-        text = parser.text
         text = " ".join(text.split())  # remove newlines and multiple consecutive spaces
 
         # Call concrete service
@@ -151,7 +150,7 @@ class SpeechService(ABC):
 
         """
         dir_in_cache = utils.get_hash_from_data(
-            speech_data, config.cache.hash_algo, config.cache.hash_len
+            speech_data, self.config.cache.hash_algo, self.config.cache.hash_len
         )
-        file_path = Path(config.cache.dir) / dir_in_cache / filename
+        file_path = Path(self.config.cache.dir) / dir_in_cache / filename
         return file_path
