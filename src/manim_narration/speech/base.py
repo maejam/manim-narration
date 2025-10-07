@@ -28,6 +28,8 @@ class SpeechService(ABC, Config):
 
     Parameters
     ----------
+    create_subcaption
+        Whether this service should create subcaptions or not.
     service_kwargs
         All the arguments used when instantiating the service. Used to create the
         `SpeechData` dictionary.
@@ -117,10 +119,7 @@ class SpeechService(ABC, Config):
         if audio_file_path.exists():
             return audio_file_path
         else:
-            audio_file_path.parent.mkdir(parents=True)
-
-        # Preprocessing
-        text = " ".join(text.split())  # remove newlines and multiple consecutive spaces
+            audio_file_path.parent.mkdir(parents=True, exist_ok=True)
 
         # Call concrete service
         audio_file_path = self.generate_speech(text, audio_file_path)

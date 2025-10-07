@@ -18,14 +18,22 @@ class GTTSService(SpeechService):
         The language to use for the speech.
     tld
         Top level domain. Can be used to change the acccent.
+    create_subcaption
+        Whether this service should create subcaptions or not.
     kwargs
         Other keyword arguments passed to gtts. See the documentation for more
         information.
 
     """
 
-    def __init__(self, lang: str = "en", tld: str = "com", **kwargs: t.Any) -> None:
-        super().__init__(lang=lang, tld=tld, **kwargs)
+    def __init__(
+        self,
+        lang: str = "en",
+        tld: str = "com",
+        create_subcaption: bool = False,
+        **kwargs: t.Any,
+    ) -> None:
+        super().__init__(create_subcaption, lang=lang, tld=tld, **kwargs)
         self.lang = lang
         self.tld = tld
         self.kwargs = kwargs

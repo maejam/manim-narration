@@ -1,5 +1,6 @@
 import hashlib
 import json
+import re
 import typing as t
 from collections.abc import Mapping
 
@@ -52,3 +53,63 @@ def get_hash_from_data(data: t.Any, hash_algo: str, hash_len: int) -> str:
         digest = digest[:hash_len]
 
     return digest
+
+
+def split_after_characters(text: str, chars: str) -> list[str]:
+    """Split a text after a predefined set of characters.
+
+    Parameters
+    ----------
+    text
+        The text to split.
+    chars
+        The set of individual characters to split on. If multiple consecutive
+        characters are found, they will be treated as one. For example, the text
+        `"Hello, world!!!"` will return `["Hello,", "world!!!"]` with
+        `chars = ",!"`.
+
+    """
+    # split on chars with look-behind pattern to keep the chars with their split
+    if chars:
+        pattern = rf"(?<=[{re.escape(chars)}])\s+"
+        splits = re.split(pattern, text)
+    else:
+        splits = [text]
+    return splits
+
+
+def regroup_splits(splits: list[str], max_len: int) -> list[str]:
+    """Regroup strings in a list without exceeding a maximum length.
+
+    Parameters
+    ----------
+    splits
+        A list of strings.
+    max_len
+        The maximum length that strings in the new list should never exceed.
+
+    Returns
+    -------
+    A list of strings where each element in the original list is regrouped with the
+    previous one iff their combined length is not exceeding `max_len`.
+
+    """
+    regrouped = []  # will hold splits after grouping
+    group = ""  # will hold the current group being processed
+
+    for split in splits:
+        if not split:
+            continue
+        if len(split) > max_len:
+            if group:
+                regrouped.append(group)
+                group = ""
+            regrouped.append(split)
+            continue
+        if len(group) + len(split) <= max_len - 1:  # account for space
+            group = f"{group} {split}" if group else split
+        else:
+            regrouped.append(group)
+            group = split
+    regrouped.append(group)
+    return regrouped
