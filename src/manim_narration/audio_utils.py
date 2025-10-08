@@ -1,3 +1,4 @@
+from functools import lru_cache
 from pathlib import Path
 
 import librosa
@@ -11,6 +12,7 @@ class NarrationAudioError(NarrationError):
     pass
 
 
+@lru_cache(maxsize=1)
 def get_duration(path: Path | str) -> float:
     """Get the duration of an audio file.
 
