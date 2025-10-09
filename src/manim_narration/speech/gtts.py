@@ -3,7 +3,7 @@ from pathlib import Path
 
 import gtts
 
-from manim_narration.speech.base import SpeechService, SpeechServiceError
+from manim_narration.speech.speech_base import SpeechService, SpeechServiceError
 
 
 class GTTSService(SpeechService):

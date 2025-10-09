@@ -3,7 +3,7 @@ from abc import ABC, abstractmethod
 from pathlib import Path
 
 from manim_narration import utils
-from manim_narration._config.base import Config
+from manim_narration._config.config_base import Config
 from manim_narration.typing import SpeechData
 
 

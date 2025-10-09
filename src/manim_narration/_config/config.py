@@ -3,7 +3,7 @@ from pathlib import Path
 
 from pydantic import BaseModel, ConfigDict, Field, PrivateAttr
 
-from .base import PhField, PlaceholderModel, PlaceholderSettings
+from .config_base import PhField, PlaceholderModel, PlaceholderSettings
 
 
 class Cache(PlaceholderModel):

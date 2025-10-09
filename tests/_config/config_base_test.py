@@ -4,7 +4,7 @@ from pathlib import Path
 import pytest
 from pydantic import Field, ValidationError
 
-from manim_narration._config.base import (
+from manim_narration._config.config_base import (
     CONFIG_FILE_NAME,
     DOTENV_FILE_NAME,
     PYPROJECT_TOML_TABLE,
