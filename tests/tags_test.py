@@ -12,118 +12,211 @@ def parser():
 
 
 @pytest.mark.parametrize(
-    ("type_", "expected"),
+    ("kind", "expected"),
     [
         ("start", '<tag k1="v1" k2="v2">'),
         ("end", "</tag>"),
         ("startend", '<tag k1="v1" k2="v2"/>'),
     ],
 )
-def test_TagInfo_repr(type_, expected):
-    assert repr(TagInfo(type_, "tag", {"k1": "v1", "k2": "v2"})) == expected
+def test_TagInfo_str(kind, expected):
+    assert str(TagInfo(kind, "tag", {"k1": "v1", "k2": "v2"}, 0)) == expected
+
+
+@pytest.mark.parametrize(
+    ("kind", "expected"),
+    [
+        (
+            "start",
+            "TagInfo(kind='start', name='tag', attrs={'k1': 'v1', 'k2': 'v2'}, "
+            "offset=0)",
+        ),
+        ("end", "TagInfo(kind='end', name='tag', attrs={}, offset=0)"),
+        (
+            "startend",
+            "TagInfo(kind='startend', name='tag', attrs={'k1': 'v1', 'k2': 'v2'}, "
+            "offset=0)",
+        ),
+    ],
+)
+def test_TagInfo_repr(kind, expected):
+    tag = TagInfo(kind, "tag", {"k1": "v1", "k2": "v2"}, 0)
+    assert repr(tag) == expected
+    assert eval(repr(tag)) == tag
 
 
 def test_TagInfo_eq():
-    assert TagInfo("start", "tag", {}) == TagInfo("start", "tag", {})
-    assert TagInfo("start", "tag", {"attr": "value"}) == TagInfo(
-        "start", "tag", {"attr": "value"}
+    assert TagInfo("start", "tag", {}, 0) == TagInfo("start", "tag", {}, 0)
+    assert TagInfo("start", "tag", {"attr": "value"}, 0) == TagInfo(
+        "start", "tag", {"attr": "value"}, 0
     )
-    assert TagInfo("startend", "tag", {}) != TagInfo("start", "tag", {})
-    assert TagInfo("start", "tag2", {}) != TagInfo("start", "tag", {})
-    assert TagInfo("start", "tag", {"attr": "value"}) != TagInfo("start", "tag", {})
+    assert TagInfo("startend", "tag", {}, 0) != TagInfo("start", "tag", {}, 0)
+    assert TagInfo("start", "tag2", {}, 0) != TagInfo("start", "tag", {}, 0)
+    assert TagInfo("start", "tag", {"attr": "value"}, 0) != TagInfo(
+        "start", "tag", {}, 0
+    )
+    assert TagInfo("start", "tag", {"attr": "value"}, 0) != TagInfo(
+        "start", "tag", {}, 1
+    )
 
 
-def test_TagParser_without_tags(parser):
+@pytest.mark.parametrize(
+    ("record", "remove"),
+    [
+        (None, None),
+        (None, set()),
+        (None, set("b")),
+        (set(), None),
+        (set(), set()),
+        (set(), set("b")),
+        (set("a"), None),
+        (set("a"), set()),
+        (set("a"), set("b")),
+    ],
+)
+def test_TagParser_without_tags(parser, record, remove):
     text = "This is just a test string."
+    parser.tags_to_record = record
+    parser.tags_to_remove = remove
     parser.feed(text)
     assert parser.text == text
+    assert parser.tags == []
+
+
+def test_TagParser_works_with_all_kind(parser):
+    parser.feed(
+        "The <foo k='vfoo'/>quick <bar k=vbar>brown</bar> fox jumps over the lazy dog."
+    )
+    assert parser.text == "The quick brown fox jumps over the lazy dog."
+    assert parser.tags == [
+        TagInfo("startend", "foo", {"k": "vfoo"}, 4),
+        TagInfo("start", "bar", {"k": "vbar"}, 10),
+        TagInfo("end", "bar", {}, 15),
+    ]
+
+
+@pytest.mark.parametrize(
+    "text",
+    [
+        "This is <a/>a test.",
+        "<b/>This is a test.",
+        "This is a test.<c/>",
+        "This <d>is</d> a test.",
+    ],
+)
+def test_TagParser_with_tags_to_remove_None(parser, text):
+    parser.tags_to_remove = None
+    parser.feed(text)
+    assert parser.text == text
+
+
+@pytest.mark.parametrize(
+    "text",
+    [
+        "This is <a/>a test.",
+        "<b/>This is a test.",
+        "This is a test.<c/>",
+        "This <d>is</d> a test.",
+    ],
+)
+def test_TagParser_with_tags_to_record_None(parser, text):
+    parser.tags_to_record = None
+    parser.feed(text)
     assert parser.tags == []
 
 
 @pytest.mark.parametrize(
     "text",
     [
-        "This is <gghghg/>a test.",
-        "<gghghg/>This is a test.",
-        "This is a test.<gghghg/>",
-        "This <gghghg>is</gghghg> a test.",
+        "This is <a/>a test.",
+        "<b/>This is a test.",
+        "This is a test.</c>",
+        "This <d>is</d> a test.",
     ],
 )
-def test_TagParser_does_not_remove_non_considered_tags(parser, text):
-    parser.tags_to_consider = tags
+def test_TagParser_with_tags_to_remove_all(parser, text):
+    parser.tags_to_remove = set()
     parser.feed(text)
-    assert parser.text == text
-    assert parser.tags == []
+    assert parser.text == "This is a test."
 
 
 @pytest.mark.parametrize(
-    ("text", "expected_txt", "expected_tags"),
+    ("text", "expected"),
     [
+        ("This is <a/>a test.", [TagInfo("startend", "a", {}, 8)]),
+        ("<b/>This is a test.", [TagInfo("startend", "b", {}, 0)]),
+        ("This is a test.</c>", [TagInfo("end", "c", {}, 15)]),
         (
-            "This is a <bookmark mark='test'/>.",
-            "This is a .",
-            [TagInfo("startend", "bookmark", {"mark": "test"})],
+            "This <d>is</d> a test.",
+            [TagInfo("start", "d", {}, 5), TagInfo("end", "d", {}, 7)],
         ),
-        ("And another<foo/>one", "And anotherone", [TagInfo("startend", "foo", {})]),
     ],
 )
-def test_TagParser_works_with_only_one_tag(parser, text, expected_txt, expected_tags):
-    parser.tags_to_consider = tags
+def test_TagParser_with_tags_to_record_all(parser, text, expected):
+    parser.tags_to_record = set()
     parser.feed(text)
-    assert parser.text == expected_txt
-    assert parser.tags == expected_tags
+    assert parser.tags == expected
 
 
 @pytest.mark.parametrize(
-    ("text", "expected_tagname"),
+    "text",
     [
-        ("It works<bookmark />!", "bookmark"),
-        ("It works<foo />!", "foo"),
-        ("It works<bar />!", "bar"),
+        "This is <a/>a test.",
+        "<b/>This is a test.",
+        "This is a test.<c/>",
+        "This <d>is</d> a test.",
     ],
 )
-def test_TagParser_works_with_all_declared_tags(parser, text, expected_tagname):
-    parser.tags_to_consider = tags
+def test_TagParser_with_tags_to_remove_defaults_to_all(parser, text):
     parser.feed(text)
-    assert parser.text == "It works!"
-    assert parser.tags == [TagInfo("startend", expected_tagname, {})]
+    assert parser.text == "This is a test."
 
 
 @pytest.mark.parametrize(
-    ("text", "expected_tagname"),
+    ("text", "expected"),
     [
-        ("It works<bookmark />!", "bookmark"),
-        ("It works<foo />!", "foo"),
-        ("It works<bar />!", "bar"),
+        ("This is <a/>a test.", [TagInfo("startend", "a", {}, 8)]),
+        ("<b/>This is a test.", [TagInfo("startend", "b", {}, 0)]),
+        ("This is a test.</c>", [TagInfo("end", "c", {}, 15)]),
+        (
+            "This <d>is</d> a test.",
+            [TagInfo("start", "d", {}, 5), TagInfo("end", "d", {}, 7)],
+        ),
     ],
 )
-def test_TagParser_works_with_default_declared_tags(parser, text, expected_tagname):
+def test_TagParser_with_tags_to_record_defaults_to_all(parser, text, expected):
     parser.feed(text)
-    assert parser.text == "It works!"
-    assert parser.tags == [TagInfo("startend", expected_tagname, {})]
+    assert parser.tags == expected
 
 
 @pytest.mark.parametrize(
-    ("text", "expected_tagnames"),
+    ("text", "expected"),
     [
-        ("It <foo/>works<bookmark />!", ["foo", "bookmark"]),
-        ("It works<foo /><bar/>!", ["foo", "bar"]),
-        ("<foo/>It<foo/> works<bar />!<bookmark/>", ["foo", "foo", "bar", "bookmark"]),
+        ("This is <foo/>a<baz/> test.", "This is a<baz/> test."),
+        ("<bar/>This is a</baz> test.", "This is a</baz> test."),
+        ("This is a test.<baz><foo/></baz>", "This is a test.<baz></baz>"),
+        ("This </foo>is</bar><baz> a test.", "This is<baz> a test."),
     ],
 )
-def test_TagParser_works_with_multiple_tags(parser, text, expected_tagnames):
+def test_TagParser_with_tags_to_remove_subset(parser, text, expected):
+    parser.tags_to_remove = tags
     parser.feed(text)
-    assert parser.text == "It works!"
-    assert parser.tags == [TagInfo("startend", name, {}) for name in expected_tagnames]
+    assert parser.text == expected
 
 
-def test_TagParser_works_with_all_tag_types(parser):
-    parser.feed(
-        "The <foo k='vfoo'/>quick <bar k=vbar>brown</bar> fox jumps over the lazy dog."
-    )
-    assert parser.text == "The quick brown fox jumps over the lazy dog."
-    assert parser.tags == [
-        TagInfo("startend", "foo", {"k": "vfoo"}),
-        TagInfo("start", "bar", {"k": "vbar"}),
-        TagInfo("end", "bar", {}),
-    ]
+@pytest.mark.parametrize(
+    ("text", "expected"),
+    [
+        ("This is <foo/>a<baz/> test.", [TagInfo("startend", "foo", {}, 8)]),
+        ("<bar/>This is a</baz> test.", [TagInfo("startend", "bar", {}, 0)]),
+        ("This is a test.<baz><foo></baz>", [TagInfo("start", "foo", {}, 15)]),
+        (
+            "This </foo>is</bar><baz> a test.",
+            [TagInfo("end", "foo", {}, 5), TagInfo("end", "bar", {}, 7)],
+        ),
+    ],
+)
+def test_TagParser_with_tags_to_record_subset(parser, text, expected):
+    parser.tags_to_record = tags
+    parser.feed(text)
+    assert parser.tags == expected
