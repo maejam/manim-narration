@@ -21,7 +21,10 @@ dev = [
 ]
 
 [project.optional-dependencies]
-full = ["manim-narration[gtts]"]
+full = ["manim-narration[gtts]", "manim-narration[coqui]"]
+coqui = [
+    "coqui-tts>=0.27.2",
+]
 gtts = [
     "gtts>=2.5.4",
 ]
