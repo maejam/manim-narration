@@ -14,7 +14,7 @@ config: "NarrationConfig"
 
 
 def __getattr__(name: str) -> t.Any:
-    """Lazy load the global config object."""
+    """Lazy load the global config object to avoid side-effects."""
     global config
     if name == "config" and "config" not in globals():
         from manim_narration._config.config import NarrationConfig
