@@ -2,7 +2,7 @@ import typing as t
 from abc import ABC, abstractmethod
 from pathlib import Path
 
-from manim_narration import utils
+from manim_narration import audio_utils, utils
 from manim_narration._config.config_base import Config
 from manim_narration.typing import SpeechData
 
@@ -114,17 +114,22 @@ class SpeechService(ABC, Config):
             "service_name": type(self).__name__,
             "service_kwargs": self.service_kwargs,
         }
-        filename = self.config.cache.audio_file_base_name + self.file_extension
-        audio_file_path = self._get_path_to_file_in_cache(speech_data, filename)
+        file_basename = self.config.cache.audio_file_base_name
+        audio_file_path = self._get_path_to_file_in_cache(
+            speech_data, file_basename + ".wav"
+        )
         if audio_file_path.exists():
             return audio_file_path
         else:
             audio_file_path.parent.mkdir(parents=True, exist_ok=True)
 
         # Call concrete service
-        audio_file_path = self.generate_speech(text, audio_file_path)
+        audio_file_path = self.generate_speech(
+            text, audio_file_path.with_suffix(self.file_extension)
+        )
 
         # Postprocessing
+        audio_file_path = audio_utils.convert_to_wav(audio_file_path)
         audio_file_path = self.audio_callback(audio_file_path)
 
         return audio_file_path

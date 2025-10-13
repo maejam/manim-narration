@@ -18,7 +18,7 @@ class KokoroService(SpeechService):
     def __init__(
         self,
         lang_code: str = "a",
-        voice: str = "ah_heart",
+        voice: str = "af_heart",
         create_subcaption: bool = False,
         **service_kwargs: t.Any,
     ) -> None:
