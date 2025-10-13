@@ -17,15 +17,17 @@ class KokoroService(SpeechService):
 
     def __init__(
         self,
-        lang_code: str,
-        voice: str,
+        lang_code: str = "a",
+        voice: str = "ah_heart",
         create_subcaption: bool = False,
         **service_kwargs: t.Any,
     ) -> None:
         super().__init__(
             create_subcaption, lang_code=lang_code, voice=voice, **service_kwargs
         )
-        self.pipeline = KPipeline(lang_code=lang_code)
+        self.pipeline = KPipeline(
+            repo_id="hexgrad/Kokoro-82M", lang_code=lang_code, **service_kwargs
+        )
         self.voice = voice
 
     @property
