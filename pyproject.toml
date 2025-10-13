@@ -21,12 +21,16 @@ dev = [
 ]
 
 [project.optional-dependencies]
-full = ["manim-narration[gtts]", "manim-narration[coqui]"]
+full = ["manim-narration[coqui]", "manim-narration[gtts]", "manim_narration[kokoro]"]
 coqui = [
     "coqui-tts>=0.27.2",
 ]
 gtts = [
     "gtts>=2.5.4",
+]
+kokoro = [
+    "kokoro>=0.9.4",
+    "soundfile>=0.13.1",
 ]
 
 [project.entry-points."manim.plugins"]
@@ -56,10 +60,11 @@ markers = [
 ]
 filterwarnings = [
     "error",
-    "ignore:The '__version__' attribute is deprecated and will be removed in Click 9.1:DeprecationWarning",# cloup
+    # "ignore:The '__version__' attribute is deprecated and will be removed in Click 9.1:DeprecationWarning",# cloup
     "ignore:invalid escape sequence:SyntaxWarning", # pydub
     "ignore:invalid escape sequence:DeprecationWarning", # pydub (<3.12)
     "ignore:'audioop' is deprecated and slated for removal:DeprecationWarning", # audioop
+    'ignore:datetime.datetime.utcnow\(\) is deprecated:DeprecationWarning',
 ]
 
 [tool.coverage.run]
@@ -76,6 +81,9 @@ strict = true
 module = [
     "manim.*",
     "gtts.*",
+    "TTS.*",
+    "kokoro.*",
+    "soundfile.*"
 ]
 
 ignore_missing_imports = true

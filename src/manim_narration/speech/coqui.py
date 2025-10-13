@@ -2,7 +2,7 @@ import typing as t
 from pathlib import Path
 
 import torch
-from TTS.api import TTS  # type:ignore[import-untyped]
+from TTS.api import TTS
 
 from .speech_base import SpeechService
 
