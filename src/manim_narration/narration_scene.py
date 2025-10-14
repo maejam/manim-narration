@@ -7,7 +7,7 @@ import manim as m
 
 from manim_narration import tags, utils
 from manim_narration._config.config_base import Config
-from manim_narration.alignment import Interpolator
+from manim_narration.alignment import ManualAligner
 from manim_narration.alignment.aligner_base import AlignmentService
 from manim_narration.speech.speech_base import SpeechService, SpeechServiceError
 from manim_narration.tracker import NarrationTracker
@@ -30,7 +30,7 @@ class NarrationScene(m.Scene, Config):  # type: ignore[misc]
         `NarrationScene.set_speech_services`.
     alignment_service
         An instance of a concrete `AlignmentService` used to align bookmarks with the
-        generated narrations. Defaults to `Interpolator`, but can be changed using
+        generated narrations. Defaults to `ManualAligner`, but can be changed using
         `NarrationScene.set_alignment_service`.
 
     """
@@ -41,7 +41,7 @@ class NarrationScene(m.Scene, Config):  # type: ignore[misc]
         if not self.cache_dir.exists():
             self.cache_dir.mkdir(parents=True, exist_ok=True)
         self.speech_services: dict[str, SpeechService] = {}
-        self.alignment_service: AlignmentService = Interpolator()
+        self.alignment_service: AlignmentService = ManualAligner()
 
     def set_speech_services(
         self,
