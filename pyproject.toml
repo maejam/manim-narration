@@ -23,7 +23,7 @@ dev = [
 ]
 
 [project.optional-dependencies]
-full = ["manim-narration[coqui]", "manim-narration[gtts]", "manim_narration[kokoro]"]
+full = ["manim_narration[ctc]", "manim-narration[coqui]", "manim-narration[gtts]", "manim_narration[kokoro]"]
 coqui = [
     "coqui-tts>=0.27.2",
 ]
@@ -34,6 +34,9 @@ kokoro = [
     "kokoro>=0.9.4",
     "pip>=25.2",
     "soundfile>=0.13.1",
+]
+ctc = [
+    "ctc-forced-aligner",
 ]
 
 [project.entry-points."manim.plugins"]
@@ -55,6 +58,9 @@ source-include = [
 source-exclude = [
     # "docs/_build/",
 ]
+
+[tool.uv.sources]
+ctc-forced-aligner = { git = "https://github.com/MahmoudAshraf97/ctc-forced-aligner.git" }
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
@@ -83,12 +89,13 @@ strict = true
 
 [[tool.mypy.overrides]]
 module = [
+    "ctc_forced_aligner.*",
     "manim.*",
     "manim_narration.*",
     "gtts.*",
     "TTS.*",
     "kokoro.*",
-    "soundfile.*"
+    "soundfile.*",
 ]
 
 ignore_missing_imports = true

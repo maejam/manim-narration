@@ -5,8 +5,14 @@ from manim_narration import audio_utils as audio
 from .aligner_base import AlignmentService
 
 
-class Interpolator(AlignmentService):
-    """A very basic implementation to map character offsets to timestamps."""
+class InterpolationAligner(AlignmentService):
+    """A very basic implementation to map character offsets to timestamps.
+
+    Returns
+    -------
+    A tuple containing the interpolated timestamps.
+
+    """
 
     def align_chars(
         self,

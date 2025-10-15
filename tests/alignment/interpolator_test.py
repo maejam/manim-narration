@@ -3,7 +3,7 @@ from unittest.mock import patch
 
 import pytest
 
-from manim_narration.alignment import Interpolator
+from manim_narration.alignment import InterpolationAligner
 
 
 @pytest.mark.parametrize(
@@ -19,7 +19,7 @@ from manim_narration.alignment import Interpolator
     ],
 )
 def test_interpolator(offsets, duration, expected):
-    i = Interpolator()
+    i = InterpolationAligner()
     with patch("manim_narration.audio_utils.get_duration") as mock_get_duration:
         mock_get_duration.return_value = duration
         assert i.align_chars("This is a len(25) string.", offsets, Path()) == expected

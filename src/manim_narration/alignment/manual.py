@@ -4,7 +4,13 @@ from .aligner_base import AlignmentService
 
 
 class ManualAligner(AlignmentService):
-    """Do not perform any alignment, letting the user manually align text and speech."""
+    """Do not perform any alignment, letting the user manually align text and speech.
+
+    Returns
+    -------
+    A tuple mapping each character offset to the very beginning of the speech.
+
+    """
 
     def align_chars(
         self,
