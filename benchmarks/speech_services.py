@@ -14,16 +14,16 @@ from manim_narration.speech.speech_base import SpeechService
 
 SPEECH_SERVICES = [
     CoquiService(
-        "tts_models/multilingual/multi-dataset/your_tts",
+        "tts_models/multilingual/multi-dataset/xtts_v2",
         language="en",
-        speaker="female-en-5",
+        speaker="Claribel Dervla",
     ),
     GTTSService(),
     KokoroService(),
 ]
 NUM_EXECUTIONS = 10
 TEXT = (
-    "Narration is the use of a written or spoken commentary"
+    "Narration is the use of a written or spoken commentary "
     "to convey a story to an audience."
 )
 

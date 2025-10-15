@@ -98,10 +98,10 @@ export PRECOMMIT := '''
     if [[ -n "$files" ]]; then
         just format $files
         just check $files
-        # Don't run mypy on tests
+        # Don't run mypy on tests and examples
         tocheck=()
         for file in $files; do
-            if [[ "$file" != tests/* ]]; then
+            if [[ "$file" != tests/* && "$file" != examples/* ]]; then
                 tocheck+=("$file")
             fi
         done
