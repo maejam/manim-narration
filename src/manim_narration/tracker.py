@@ -74,6 +74,7 @@ class NarrationTracker:
                 self.raw_text, self.audio_file_path
             )
             bk_ts.setdefault("_origin_", 0.0)
+            self.bookmark_timestamps = bk_ts
 
         # retrieve current and target bookmarks timestamps
         current_bk_ts = bk_ts[self.current_bookmark]
