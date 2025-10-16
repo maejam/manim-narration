@@ -1,3 +1,4 @@
+import textwrap
 import typing as t
 from abc import ABC, abstractmethod
 from pathlib import Path
@@ -5,6 +6,8 @@ from pathlib import Path
 from manim_narration import audio_utils, utils
 from manim_narration._config.config_base import Config
 from manim_narration.typing import SpeechData
+
+logger = utils.get_logger(__name__)
 
 
 class SpeechServiceError(utils.NarrationError):
@@ -108,6 +111,10 @@ class SpeechService(ABC, Config):
         The Path to the generated audio file.
 
         """
+        # TODO: find how to properly escape text
+        esc = text.replace("'", r"\'")
+        logger.info(f"Processing narration: '{textwrap.shorten(esc, width=70)}'")
+
         # Get audio from cache if already generated
         speech_data: SpeechData = {
             "input_text": text,
@@ -119,6 +126,7 @@ class SpeechService(ABC, Config):
             speech_data, file_basename + ".wav"
         )
         if audio_file_path.exists():
+            logger.info(f"Returning speech from cache: '{audio_file_path}'")
             return audio_file_path
         else:
             audio_file_path.parent.mkdir(parents=True, exist_ok=True)
@@ -132,6 +140,7 @@ class SpeechService(ABC, Config):
         audio_file_path = audio_utils.convert_to_wav(audio_file_path)
         audio_file_path = self.audio_callback(audio_file_path)
 
+        logger.info(f"Speech saved to: {audio_file_path}")
         return audio_file_path
 
     def _get_path_to_file_in_cache(

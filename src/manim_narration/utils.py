@@ -1,5 +1,6 @@
 import hashlib
 import json
+import logging
 import re
 import typing as t
 from collections.abc import Mapping
@@ -9,6 +10,11 @@ class NarrationError(Exception):
     """The base class for all exceptions in this library."""
 
     pass
+
+
+def get_logger(name: str) -> logging.Logger:
+    """Ensure the loggers are in the manim logger hierarchy."""
+    return logging.getLogger(f"manim.{name}")
 
 
 def get_hash_from_data(data: t.Any, hash_algo: str, hash_len: int) -> str:

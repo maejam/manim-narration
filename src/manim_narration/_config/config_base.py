@@ -16,8 +16,13 @@ from pydantic_settings import (
     TomlConfigSettingsSource,
 )
 
+from manim_narration import utils
+
 if t.TYPE_CHECKING:
     from manim_narration._config.config import NarrationConfig
+
+
+logger = utils.get_logger(__name__)
 
 
 DOTENV_FILE_NAME = ".env"
@@ -67,7 +72,7 @@ def PhField(default: t.Any, **kwargs: t.Any) -> t.Any:
 
     Returns
     -------
-    Whatever `Field` returns (depends on the type hint).
+    Whatever `Field` returns (uses overloads).
 
     """
     kwargs.setdefault("default", default)
@@ -166,6 +171,15 @@ class PlaceholderModel(BaseModel):
                 section_data.setdefault("placeholders", placeholders)
                 data[field_name] = section_data
         super().__init__(placeholders=placeholders, **data)
+
+    def __setattr__(self, name: str, value: t.Any, /) -> None:
+        super().__setattr__(name, value)
+        if name == "verbosity":
+            # change root logger level
+            from manim_narration import logger as l
+
+            l.setLevel(value)
+        logger.debug(f"Config option '{name}' set to '{value}'.")
 
     @field_validator("*", mode="before")
     @classmethod

@@ -12,6 +12,8 @@ from manim_narration.alignment.aligner_base import AlignmentService
 from manim_narration.speech.speech_base import SpeechService, SpeechServiceError
 from manim_narration.tracker import NarrationTracker
 
+logger = utils.get_logger(__name__)
+
 
 class NarrationScene(m.Scene, Config):  # type: ignore[misc]
     """Add narration to a scene.

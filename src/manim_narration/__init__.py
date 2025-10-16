@@ -2,14 +2,17 @@ import typing as t
 
 import manim
 
+from manim_narration import utils
 from manim_narration.narration_scene import NarrationScene as NarrationScene
 
 if t.TYPE_CHECKING:
     from manim_narration._config.config import NarrationConfig
 
+
 __all__ = ["config", "NarrationScene"]
 
 
+logger = utils.get_logger(__name__)
 config: "NarrationConfig"
 
 

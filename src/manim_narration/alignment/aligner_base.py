@@ -8,6 +8,8 @@ from manim_narration._config.config_base import Config
 from manim_narration.tags import TagParser
 from manim_narration.typing import BookmarksData, all_strings
 
+logger = utils.get_logger(__name__)
+
 
 class AlignmentError(utils.NarrationError): ...
 
@@ -109,6 +111,7 @@ class AlignmentService(ABC, Config):
             ".json"
         )
         if json_file_path.exists():
+            logger.info(f"Returning alignment from cache: '{json_file_path}'")
             with json_file_path.open() as json_file:
                 return t.cast(dict[str, t.Any], json.load(json_file))
 
@@ -123,4 +126,5 @@ class AlignmentService(ABC, Config):
         with json_file_path.open("w") as json_file:
             json.dump(bk_dict, json_file)
 
+        logger.info(f"Alignment saved to: '{json_file_path}'")
         return bk_dict

@@ -48,5 +48,9 @@ class Tags(PlaceholderModel):
 class NarrationConfig(PlaceholderSettings):
     """The root section."""
 
+    # sections
     cache: Cache = Field(default_factory=Cache)
     tags: Tags = Field(default_factory=Tags)
+
+    # top-level options
+    verbosity: str = "{verbosity}"
