@@ -8,7 +8,7 @@ import manim as m
 from manim_narration import tags, utils
 from manim_narration._config.config_base import Config
 from manim_narration.alignment import ManualAligner
-from manim_narration.alignment.aligner_base import AlignmentService
+from manim_narration.alignment.aligner_base import AlignmentError, AlignmentService
 from manim_narration.speech.speech_base import SpeechService, SpeechServiceError
 from manim_narration.tracker import NarrationTracker
 
@@ -44,6 +44,19 @@ class NarrationScene(m.Scene, Config):  # type: ignore[misc]
             self.cache_dir.mkdir(parents=True, exist_ok=True)
         self.speech_services: dict[str, SpeechService] = {}
         self.alignment_service: AlignmentService = ManualAligner()
+
+    def render(self, preview: bool = False) -> None:
+        try:
+            super().render(preview)
+        except ValueError as e:
+            if "0 seconds which Manim cannot render." in str(e):
+                message = "An error occured.\n"
+                if isinstance(self.alignment_service, ManualAligner):
+                    message += "Did you forget to manually align your bookmarks?\n"
+                message += "Your bookmarks alignment might be inconsistent: "
+                message += str(self.tracker.bookmark_timestamps)
+                raise AlignmentError(message) from e
+            raise e
 
     def set_speech_services(
         self,

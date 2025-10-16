@@ -73,7 +73,7 @@ class NarrationTracker:
             bk_ts = self.scene.alignment_service._align_bookmarks(
                 self.raw_text, self.audio_file_path
             )
-            bk_ts.setdefault("_origin_", 0.0)
+            bk_ts = {"_origin_": 0.0, **bk_ts}
             self.bookmark_timestamps = bk_ts
 
         # retrieve current and target bookmarks timestamps
