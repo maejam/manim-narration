@@ -14,7 +14,7 @@ class ManualAligner(AlignmentService):
 
     def align_chars(
         self,
-        raw_text: str,
+        text: str,
         char_offsets: tuple[int, ...],
         audio_file_path: Path,
     ) -> tuple[float, ...]:

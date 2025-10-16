@@ -7,7 +7,7 @@ from manim_narration.alignment.aligner_base import AlignmentError, AlignmentServ
 def aligner():
     class Aligner(AlignmentService):
         def align_chars(
-            self, text: str, offsets: tuple[int, ...], audio_file_path
+            self, text: str, char_offsets: tuple[int, ...], audio_file_path
         ) -> tuple[float, ...]:
             return (0.0, 1.0, 1.5)
 
@@ -21,9 +21,9 @@ def aligner():
         "<bookmark mark='A'/>First one is good, but not this one: </bookmark mark='B'>",
     ],
 )
-def test_align_bookmarks_raises_when_wrong_tag_kind(aligner, text):
+def test_align_bookmarks_raises_when_wrong_tag_kind(aligner, text, tmp_path):
     with pytest.raises(AlignmentError, match="should be self-closing"):
-        aligner._align_bookmarks(text, "")
+        aligner._align_bookmarks(text, tmp_path)
 
 
 @pytest.mark.parametrize(
@@ -32,9 +32,9 @@ def test_align_bookmarks_raises_when_wrong_tag_kind(aligner, text):
         "<bookmark mark='A'/>First one is A, second also: <bookmark mark='A'/>",
     ],
 )
-def test_align_bookmarks_raises_when_same_names(aligner, text):
+def test_align_bookmarks_raises_when_same_names(aligner, text, tmp_path):
     with pytest.raises(AlignmentError, match="should have a unique name"):
-        aligner._align_bookmarks(text, "")
+        aligner._align_bookmarks(text, tmp_path)
 
 
 @pytest.mark.parametrize(
@@ -44,9 +44,9 @@ def test_align_bookmarks_raises_when_same_names(aligner, text):
         "<bookmark mark='A'/>First one is good, but not this one: <bookmark mar='B'/>",
     ],
 )
-def test_align_bookmarks_raises_when_no_mark_attribute(aligner, text):
+def test_align_bookmarks_raises_when_no_mark_attribute(aligner, text, tmp_path):
     with pytest.raises(AlignmentError, match="must define a mark attribute"):
-        aligner._align_bookmarks(text, "")
+        aligner._align_bookmarks(text, tmp_path)
 
 
 @pytest.mark.parametrize(
@@ -58,5 +58,5 @@ def test_align_bookmarks_raises_when_no_mark_attribute(aligner, text):
         "Test string.<bookmark mark='A'/><bookmark mark='B'/><bookmark mark='C'/>",
     ],
 )
-def test_align_bookmarks_returns_right_dict(aligner, text):
-    assert aligner._align_bookmarks(text, "") == {"A": 0.0, "B": 1.0, "C": 1.5}
+def test_align_bookmarks_returns_right_dict(aligner, text, tmp_path):
+    assert aligner._align_bookmarks(text, tmp_path) == {"A": 0.0, "B": 1.0, "C": 1.5}

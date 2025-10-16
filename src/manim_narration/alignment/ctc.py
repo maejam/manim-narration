@@ -57,13 +57,15 @@ class CTCAligner(AlignmentService):
         batch_size: int = 16,
         **kwargs: t.Any,
     ) -> None:
-        super().__init__(**kwargs)
+        super().__init__(
+            language=language, model_id=model_id, batch_size=batch_size, **kwargs
+        )
         self.language = language
         self.model_id = model_id
         self.batch_size = batch_size
 
     def align_chars(
-        self, raw_text: str, char_offsets: tuple[int, ...], audio_file_path: Path
+        self, text: str, char_offsets: tuple[int, ...], audio_file_path: Path
     ) -> tuple[float, ...]:
         device = "cuda" if torch.cuda.is_available() else "cpu"
 
@@ -82,7 +84,7 @@ class CTCAligner(AlignmentService):
         )
 
         tokens_starred, text_starred = preprocess_text(
-            raw_text, romanize=True, language=self.language, split_size="char"
+            text, romanize=True, language=self.language, split_size="char"
         )
 
         segments, scores, blank_token = get_alignments(

@@ -16,6 +16,19 @@ class SpeechData(t.TypedDict):
     service_kwargs: dict[str, t.Any]
 
 
+class BookmarksData(t.TypedDict):
+    """Uniquely identify a bookmarks alignment process.
+
+    When bookmarks are aligned, they are saved in cache in a json file named after the
+    hash of this data. It is therefore essential for the included data to be able to
+    identify a given bookmarks alignment precisely and uniquely.
+    """
+
+    raw_text: str
+    service_name: str
+    service_kwargs: dict[str, t.Any]
+
+
 @t.overload
 def all_strings(sequence: list[T]) -> t.TypeGuard[list[str]]: ...
 @t.overload
