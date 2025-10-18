@@ -117,5 +117,6 @@ def regroup_splits(splits: list[str], max_len: int) -> list[str]:
         else:
             regrouped.append(group)
             group = split
-    regrouped.append(group)
+    if group:
+        regrouped.append(group)
     return regrouped

@@ -62,6 +62,12 @@ def test_split_after_characters(text, chars, expected):
         (["", "first split is", "empty."], 100, ["first split is empty."]),
         (["middle split", "", "is empty."], 100, ["middle split is empty."]),
         (["last split", "is empty.", ""], 100, ["last split is empty."]),
+        (["just one split"], 100, ["just one split"]),
+        (
+            ["just one split that exceeds max len."],
+            20,
+            ["just one split that exceeds max len."],
+        ),
     ],
 )
 def test_regroup_splits(splits, max_len, expected):
