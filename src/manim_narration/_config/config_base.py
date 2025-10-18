@@ -1,4 +1,5 @@
 import typing as t
+from inspect import isclass
 from pathlib import Path
 
 from pydantic import (
@@ -158,7 +159,7 @@ class PlaceholderModel(BaseModel):
         for field_name, field_info in type(self).model_fields.items():
             field_ann = field_info.annotation
             # inject placeholders into sections
-            if field_ann and issubclass(field_ann, PlaceholderModel):
+            if isclass(field_ann) and issubclass(field_ann, PlaceholderModel):
                 section = data.get(field_name)
                 # section can be instance (declared in __init__)
                 # or dict (external config sources) or None
@@ -188,13 +189,20 @@ class PlaceholderModel(BaseModel):
         if info.field_name is not None:
             field_info = cls.model_fields[info.field_name]
             field_ann = field_info.annotation
+
+            logger.debug(
+                f"Interpolating config field: '{cls.__name__}.{info.field_name}' "
+                f"with value '{value}' (annotation: '{field_ann}')"
+            )
+            is_base_model = isclass(field_ann) and issubclass(field_ann, BaseModel)
             if (
                 info.field_name != "placeholders"
                 and field_ann is not None
                 # nested models are dict. We can't exclude all dicts => check annotation
-                and not issubclass(field_ann, BaseModel)
+                and not is_base_model
             ):
                 value = cls.interpolate_recursively(value, info.data["placeholders"])
+                logger.debug(f"Interpolated to '{value}'")
 
                 union_mode = (
                     field_info.metadata[0].union_mode if field_info.metadata else None
