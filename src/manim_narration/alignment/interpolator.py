@@ -21,5 +21,7 @@ class InterpolationAligner(AlignmentService):
         audio_file_path: Path,
     ) -> tuple[float, ...]:
         duration = audio.get_duration(audio_file_path)
-        timestamps = tuple(duration * offset / len(text) for offset in char_offsets)
+        timestamps = tuple(
+            round(duration * offset / len(text), 3) for offset in char_offsets
+        )
         return timestamps
