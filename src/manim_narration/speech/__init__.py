@@ -10,7 +10,11 @@ __all__ = ["CoquiService", "GTTSService", "KokoroService"]
 
 
 def __getattr__(name: str) -> t.Any:
-    """Lazy-load services to improve import times."""
+    """Lazy-load heavy services.
+
+    Improves import times and allow for not installing related groups.
+
+    """
     if name == "CoquiService":
         from .coqui import CoquiService
 
