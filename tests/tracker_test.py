@@ -19,8 +19,8 @@ def scene():
     class Scene: ...
 
     scene = Scene()
-    scene.alignment_service = mock.Mock()
-    scene.alignment_service._align_bookmarks = mock.Mock()
+    scene.alignment_services = {"default": mock.Mock()}
+    scene.alignment_services["default"]._align_bookmarks = mock.Mock()
     return scene
 
 
@@ -43,7 +43,9 @@ def mock_get_duration():
 )
 def test_remaining_duration(mock_get_duration, scene, total_dur, curr_time, expected):
     mock_get_duration.return_value = total_dur
-    tracker = NarrationTracker(scene, 0, "", Path())
+    tracker = NarrationTracker(
+        scene, 0, scene.alignment_services["default"], "", Path()
+    )
     tracker.scene.time = curr_time
     assert tracker.remaining_duration == expected
 
@@ -64,8 +66,10 @@ def test_remaining_duration(mock_get_duration, scene, total_dur, curr_time, expe
 def test_duration_until_bookmark(
     mock_get_duration, scene, bk_ts, current, target, expected
 ):
-    scene.alignment_service._align_bookmarks.return_value = bk_ts
-    tracker = NarrationTracker(scene, 0, "", Path())
+    scene.alignment_services["default"]._align_bookmarks.return_value = bk_ts
+    tracker = NarrationTracker(
+        scene, 0, scene.alignment_services["default"], "", Path()
+    )
     tracker.current_bookmark = current
     assert tracker.duration_until_bookmark(target) == expected
 
@@ -81,8 +85,10 @@ def test_duration_until_bookmark(
 def test_duration_until_bookmark_with_unknown_bk_raises(
     mock_get_duration, scene, bk_ts, current, target, error
 ):
-    scene.alignment_service._align_bookmarks.return_value = bk_ts
-    tracker = NarrationTracker(scene, 0, "", Path())
+    scene.alignment_services["default"]._align_bookmarks.return_value = bk_ts
+    tracker = NarrationTracker(
+        scene, 0, scene.alignment_services["default"], "", Path()
+    )
     tracker.current_bookmark = current
     with pytest.raises(AlignmentError, match=f"bookmark `{error}` does not exist"):
         tracker.duration_until_bookmark(target)

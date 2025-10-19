@@ -1,7 +1,7 @@
 import typing as t
 from pathlib import Path
 
-from manim_narration.alignment.aligner_base import AlignmentError
+from manim_narration.alignment.aligner_base import AlignmentError, AlignmentService
 from manim_narration.audio_utils import get_duration
 
 if t.TYPE_CHECKING:
@@ -16,6 +16,8 @@ class NarrationTracker:
     start_time
         The time elapsed since the beginning of the scene when the tracker is created
         (as returned by `scene.time`).
+    alignment_service
+        The service used to align the bookmarks for this narration.
     raw_text
         The text to narrate, including the bookmarks.
     audio_file_path
@@ -27,10 +29,12 @@ class NarrationTracker:
         self,
         scene: "NarrationScene",
         start_time: float,
+        alignment_service: AlignmentService,
         raw_text: str,
         audio_file_path: Path,
     ) -> None:
         self.scene = scene
+        self.alignment_service = alignment_service
         self.raw_text = raw_text
         self.audio_file_path = audio_file_path
 
@@ -70,7 +74,7 @@ class NarrationTracker:
         # if aligner has not been called yet, do it
         bk_ts = self.bookmark_timestamps
         if bk_ts == {}:
-            bk_ts = self.scene.alignment_service._align_bookmarks(
+            bk_ts = self.alignment_service._align_bookmarks(
                 self.raw_text, self.audio_file_path
             )
             bk_ts = {"_origin_": 0.0, **bk_ts}

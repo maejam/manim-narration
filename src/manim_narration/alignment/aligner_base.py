@@ -6,7 +6,7 @@ from pathlib import Path
 import manim_narration.utils as utils
 from manim_narration._config.config_base import Config
 from manim_narration.tags import TagParser
-from manim_narration.typing import BookmarksData, all_strings
+from manim_narration.typing import AlignmentData, all_strings
 
 logger = utils.get_logger(__name__)
 
@@ -25,13 +25,13 @@ class AlignmentService(ABC, Config):
     4. If you override the `__init__` method, do not forget to call `super()` and
        provide all the calling arguments as keyword arguments.
 
-    See the Interpolator service implementation for a basic example.
+    See the Interpolator service implementation for a (very) basic example.
 
     Parameters
     ----------
     service_kwargs
         All the arguments used when instantiating the service. Used to create the
-        `BookmarksData` dictionary.
+        `AlignmentData` dictionary.
 
     """
 
@@ -63,6 +63,59 @@ class AlignmentService(ABC, Config):
         """
         raise NotImplementedError
 
+    def _align_chars_and_cache(
+        self,
+        text: str,
+        char_offsets: tuple[int, ...],
+        audio_file_path: Path,
+        alignment_data: AlignmentData,
+    ) -> tuple[float, ...]:
+        """Manage cache with character alignment.
+
+        This function is a wrapper around `align_chars`. It first checks if the
+        requested alignment is already cached. If not, it calls the alignment service
+        and then caches the data.
+
+        Parameters
+        ----------
+        text
+            The spoken text without the tags.
+        char_offsets
+            A tuple of character offsets in the text to align with the audio speech.
+        audio_file_path
+            The path to the audio file containing the generated speech.
+        alignment_data
+            The `typing.AlignmentData` instance representing this alignment process.
+
+        Returns
+        -------
+        A tuple of float timestamps relative to the beginning of the speech in seconds
+        corresponding to each character offset.
+
+        """
+        # check cached data
+        json_file_base_name = utils.get_hash_from_data(
+            alignment_data, self.config.cache.hash_algo, self.config.cache.hash_len
+        )
+        json_file_path = (audio_file_path.parent / json_file_base_name).with_suffix(
+            ".json"
+        )
+        if json_file_path.exists():
+            logger.info(f"Returning alignment from cache: '{json_file_path}'")
+            with json_file_path.open() as json_file:
+                return tuple(json.load(json_file))
+
+        # call concrete service
+        aligned_tuple = self.align_chars(text, char_offsets, audio_file_path)
+
+        # serialize to cache
+        with json_file_path.open("w") as json_file:
+            json.dump(aligned_tuple, json_file)
+
+        logger.info(f"Alignment saved to: '{json_file_path}'")
+
+        return aligned_tuple
+
     def _align_bookmarks(
         self,
         raw_text: str,
@@ -82,6 +135,11 @@ class AlignmentService(ABC, Config):
         A dictionary mapping each bookmark mark attribute to its timestamp in the audio.
 
         """
+        alignment_data: AlignmentData = {
+            "raw_text": raw_text,
+            "service_name": type(self).__name__,
+            "service_kwargs": self.service_kwargs,
+        }
         bookmark_mapping = self.config.tags.mapping["bookmark"]
         parser = TagParser(tags_to_record={bookmark_mapping})
         parser.feed(raw_text)
@@ -98,33 +156,15 @@ class AlignmentService(ABC, Config):
         if not all_strings(marks):
             raise AlignmentError("Bookmarks must define a mark attribute.")
 
-        # Get alignment from cache if already generated
-        bookmarks_data: BookmarksData = {
-            "raw_text": raw_text,
-            "service_name": type(self).__name__,
-            "service_kwargs": self.service_kwargs,
-        }
-        json_file_base_name = utils.get_hash_from_data(
-            bookmarks_data, self.config.cache.hash_algo, self.config.cache.hash_len
-        )
-        json_file_path = (audio_file_path.parent / json_file_base_name).with_suffix(
-            ".json"
-        )
-        if json_file_path.exists():
-            logger.info(f"Returning alignment from cache: '{json_file_path}'")
-            with json_file_path.open() as json_file:
-                return t.cast(dict[str, t.Any], json.load(json_file))
+        logger.info(f"Aligning bookmarks: {[tag.attrs['mark'] for tag in parser.tags]}")
 
-        # call concrete service
-        bk_tuple = self.align_chars(
-            parser.text, tuple(tag.offset for tag in parser.tags), audio_file_path
+        # Get alignment from cache if already generated else generate and cache
+        bk_tuple = self._align_chars_and_cache(
+            parser.text,
+            tuple(tag.offset for tag in parser.tags),
+            audio_file_path,
+            alignment_data,
         )
 
         bk_dict = dict(zip(marks, bk_tuple, strict=True))
-
-        # serialize to cache
-        with json_file_path.open("w") as json_file:
-            json.dump(bk_dict, json_file)
-
-        logger.info(f"Alignment saved to: '{json_file_path}'")
         return bk_dict
