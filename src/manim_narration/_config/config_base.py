@@ -301,8 +301,8 @@ class Config:
     It can then access the `config` instance from the `config` property.
     """
 
-    @property
-    def config(self) -> "NarrationConfig":
+    @utils.classproperty
+    def config(cls) -> "NarrationConfig":
         from manim_narration import config
 
         return config

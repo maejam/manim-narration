@@ -3,6 +3,16 @@ import pytest
 import manim_narration.utils as u
 
 
+def test_classproperty():
+    class Test:
+        @u.classproperty
+        def func(cls) -> int:
+            return 42
+
+    assert Test.func == 42
+    assert Test().func == 42
+
+
 def test_get_hash_from_data_with_dict_returns_hash():
     assert len(u.get_hash_from_data({}, "sha256", -1)) == 64
 

@@ -17,6 +17,21 @@ def get_logger(name: str) -> logging.Logger:
     return logging.getLogger(f"manim.{name}")
 
 
+T = t.TypeVar("T")
+R = t.TypeVar("R")
+
+
+class classproperty(t.Generic[T, R]):
+    """classmethod properties are deprecated since 3.11 and removed in 3.13."""
+
+    # TODO: find how to annotate Callable input: should be T or type[T] but both fail
+    def __init__(self, func: t.Callable[[t.Any], R]) -> None:
+        self._func = func
+
+    def __get__(self, _: T | None, owner: type[T]) -> R:
+        return self._func(owner)
+
+
 def get_hash_from_data(data: t.Any, hash_algo: str, hash_len: int) -> str:
     """Compute the hash of a json-serializable object.
 
