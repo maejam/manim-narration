@@ -17,18 +17,18 @@ def get_logger(name: str) -> logging.Logger:
     return logging.getLogger(f"manim.{name}")
 
 
-T = t.TypeVar("T")
+# T = t.TypeVar("T")
 R = t.TypeVar("R")
 
 
-class classproperty(t.Generic[T, R]):
+class classproperty(t.Generic[R]):
     """classmethod properties are deprecated since 3.11 and removed in 3.13."""
 
-    # TODO: find how to annotate Callable input: should be T or type[T] but both fail
+    # TODO: find how to annotate properly
     def __init__(self, func: t.Callable[[t.Any], R]) -> None:
         self._func = func
 
-    def __get__(self, _: T | None, owner: type[T]) -> R:
+    def __get__(self, _: t.Any, owner: t.Any) -> R:
         return self._func(owner)
 
 
