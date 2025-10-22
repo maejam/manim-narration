@@ -108,7 +108,10 @@ class NarrationScene(m.Scene, Config):  # type: ignore[misc]
 
     @contextmanager
     def narration(
-        self, speech_service_id: str | None = None, **kwargs: t.Any
+        self,
+        speech_service_id: str | None = None,
+        alignment_service_id: str | None = None,
+        **kwargs: t.Any,
     ) -> t.Generator[NarrationTracker, t.Any, None]:
         """Add narration to a scene through a context manager.
 
@@ -117,7 +120,10 @@ class NarrationScene(m.Scene, Config):  # type: ignore[misc]
         speech_service_id
             The identifier of the service to be used. Defaults to the first service
             declared in `set_speech_services`.
-
+        alignment_service_id
+            The identifier of the alignment service to be used. Defaults to the first
+            service declared in `set_alignment_services` (which is
+            `InterpolationAligner()` if `set_alignment_services` was never called).
         kwargs
             Other parameters passed to `add_narration`.
 
@@ -126,7 +132,7 @@ class NarrationScene(m.Scene, Config):  # type: ignore[misc]
             The NarrationTracker object.
 
         """
-        yield self.add_narration(speech_service_id, **kwargs)
+        yield self.add_narration(speech_service_id, alignment_service_id, **kwargs)
         self.wait_for_narration_to_finish()
 
     def add_narration(
