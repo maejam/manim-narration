@@ -83,6 +83,10 @@ For now there is no dedicated documentation. See the in-code documentation.
 
 
 
+https://github.com/user-attachments/assets/c582194b-2c0d-4449-97f8-d7ee4320f248
+
+
+
 
 
 ```python
