@@ -38,14 +38,9 @@ class CoquiService(SpeechService):
     def __init__(
         self,
         model: str,
-        create_subcaption: bool = False,
         **kwargs: t.Any,
     ) -> None:
-        super().__init__(
-            create_subcaption,
-            model=model,
-            **kwargs,
-        )
+        super().__init__(model=model, **kwargs)
         self.model = model
         self.kwargs = kwargs
         self.is_speaker_wav_cached = False

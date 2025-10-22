@@ -31,19 +31,14 @@ class SpeechService(ABC, Config):
 
     Parameters
     ----------
-    create_subcaption
-        Whether this service should create subcaptions or not.
     service_kwargs
         All the arguments used when instantiating the service. Used to create the
         `SpeechData` dictionary.
 
     """
 
-    def __init__(
-        self, create_subcaption: bool = False, **service_kwargs: t.Any
-    ) -> None:
+    def __init__(self, **service_kwargs: t.Any) -> None:
         self.service_kwargs = service_kwargs
-        self.create_subcaption = create_subcaption
 
     @property
     @abstractmethod

@@ -19,12 +19,9 @@ class KokoroService(SpeechService):
         self,
         lang_code: str = "a",
         voice: str = "af_heart",
-        create_subcaption: bool = False,
         **service_kwargs: t.Any,
     ) -> None:
-        super().__init__(
-            create_subcaption, lang_code=lang_code, voice=voice, **service_kwargs
-        )
+        super().__init__(lang_code=lang_code, voice=voice, **service_kwargs)
         self.pipeline = KPipeline(
             repo_id="hexgrad/Kokoro-82M", lang_code=lang_code, **service_kwargs
         )

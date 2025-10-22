@@ -30,10 +30,9 @@ class GTTSService(SpeechService):
         self,
         lang: str = "en",
         tld: str = "com",
-        create_subcaption: bool = False,
         **kwargs: t.Any,
     ) -> None:
-        super().__init__(create_subcaption, lang=lang, tld=tld, **kwargs)
+        super().__init__(lang=lang, tld=tld, **kwargs)
         self.lang = lang
         self.tld = tld
         self.kwargs = kwargs
