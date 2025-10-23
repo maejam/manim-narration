@@ -85,7 +85,7 @@ For now there is no dedicated documentation. See the in-code documentation.
 
 > [!NOTE]
 > The example below uses `CTCAligner` and `GTTSService`.
-> To run it you must install with `ggts` and `ctc` extra (or use another aligner).
+> To run it you must install with `gtts` and `ctc` extra (or use another aligner).
 
 
 https://github.com/user-attachments/assets/c582194b-2c0d-4449-97f8-d7ee4320f248
