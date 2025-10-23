@@ -37,6 +37,7 @@ kokoro = [
 ]
 ctc = [
     "ctc-forced-aligner",
+    "torchcodec>=0.8.0",
 ]
 
 [project.entry-points."manim.plugins"]
