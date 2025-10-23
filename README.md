@@ -50,6 +50,9 @@ Check the `benchmarks/` directory to see how the statistics below are produced. 
 
 <sub>*pretrained Wav2Vec2, HuBERT, and MMS models from HuggingFace can be used. The one being benchmarked here is the default model (https://huggingface.co/MahmoudAshraf/mms-300m-1130-forced-aligner)</sub>
 
+> [!NOTE]
+> Running local services such as `Coqui`, `Kokoro` and `CTCAligner` for the first time will trigger the download of the models. This can be a lengthy process but the models are then cached.
+
 
 ## Installation
 
