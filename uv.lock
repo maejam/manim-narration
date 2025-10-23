@@ -1808,12 +1808,14 @@ coqui = [
 ]
 ctc = [
     { name = "ctc-forced-aligner" },
+    { name = "hf-xet" },
     { name = "torchcodec" },
 ]
 full = [
     { name = "coqui-tts" },
     { name = "ctc-forced-aligner" },
     { name = "gtts" },
+    { name = "hf-xet" },
     { name = "kokoro" },
     { name = "pip" },
     { name = "soundfile" },
@@ -1843,6 +1845,7 @@ requires-dist = [
     { name = "coqui-tts", marker = "extra == 'coqui'", specifier = ">=0.27.2" },
     { name = "ctc-forced-aligner", marker = "extra == 'ctc'", git = "https://github.com/MahmoudAshraf97/ctc-forced-aligner.git" },
     { name = "gtts", marker = "extra == 'gtts'", specifier = ">=2.5.4" },
+    { name = "hf-xet", marker = "extra == 'ctc'", specifier = ">=1.1.10" },
     { name = "kokoro", marker = "extra == 'kokoro'", specifier = ">=0.9.4" },
     { name = "librosa", specifier = ">=0.11.0" },
     { name = "manim", specifier = ">=0.19.0" },
