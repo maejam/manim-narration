@@ -19,7 +19,7 @@ class CoquiService(SpeechService):
     commercial use, especially the XTTS models. More information on the models licenses:
     https://github.com/idiap/coqui-ai-TTS/blob/dev/TTS/.models.json
 
-    You can list the models in the command line using `tts list_models`.
+    You can list the models in the command line using `tts --list_models`.
     List the speakers for a model: `tts --model_name <model_name> --list_speaker_idxs`
     List the languages for a model: `tts --model_name <model_name> --list_language_idxs`
 
