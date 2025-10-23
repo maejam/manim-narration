@@ -80,13 +80,12 @@ For now there is no dedicated documentation. See the in-code documentation.
 > [!IMPORTANT]
 > Just like voiceover, render scenes with `--disable_caching` to avoid bugs
 
-
+> [!NOTE]
+> The example below uses `CTCAligner` and `GTTSService`.
+> To run it you must install with `ggts` and `ctc` extra (or use another aligner).
 
 
 https://github.com/user-attachments/assets/c582194b-2c0d-4449-97f8-d7ee4320f248
-
-
-
 
 
 ```python
