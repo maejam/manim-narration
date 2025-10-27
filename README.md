@@ -56,21 +56,15 @@ Check the `benchmarks/` directory to see how the statistics below are produced. 
 
 ## Installation
 
-For now there is no Pypi package. Install either by cloning the repo:
+For now there is no Pypi package. Install by adding to your `manim` project:
+- create the project if necessary:
 ```
-# using uv
-git clone https://github.com/maejam/manim-narration.git
-cd manim_narration
-uv pip install -e .
-# uv pip install -e .[coqui] to install with extra `coqui` (see `pyproject.py` for more extras)
-```
-or adding as a dependency to your project:
-```
-# using uv:
 uv init myproject
 cd myproject
-uv add git+https://github.com/maejam/manim-narration.git
-# uv add git+https://github.com/maejam/manim-narration.git[coqui] to install with extra `coqui` (see `pyproject.py` for more extras)
+```
+- add the plugin to your newly created or existing project with all the available services:
+```
+uv add git+https://github.com/maejam/manim-narration.git[full]
 ```
 
 
