@@ -42,6 +42,8 @@ Check the `benchmarks/` directory to see how the statistics below are produced. 
 
 ### Available alignment services
 
+The role of the `aligners` is to match up the text spoken in the generated audio file with the time when it is spoken. They are only useful when using bookmarks or for synchronizing subcaptions.
+
 | Service       | Description                                          | type    | Inference time (cpu)   | Distance from truth |
 |---------------|------------------------------------------------------|---------|------------------------|---------------------|
 | Manual        | Lets the user manually align text and speech         | Offline | 0.0 seconds            |          irrelevant |
@@ -81,6 +83,7 @@ For now there is no dedicated documentation. See the in-code documentation.
 > The example below uses `CTCAligner` and `GTTSService`.
 > To run it you must install with `gtts` and `ctc` extra (or use another aligner).
 
+<sub>Activate the sound under the video.</sub>
 
 https://github.com/user-attachments/assets/c582194b-2c0d-4449-97f8-d7ee4320f248
 
