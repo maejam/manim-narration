@@ -1793,7 +1793,7 @@ wheels = [
 
 [[package]]
 name = "manim-narration"
-version = "1.0.0"
+version = "1.0.1"
 source = { editable = "." }
 dependencies = [
     { name = "librosa" },
