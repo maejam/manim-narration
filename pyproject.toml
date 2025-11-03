@@ -3,7 +3,7 @@ name = "manim-narration"
 version = "1.0.0"
 description = "Add narrations to your manim scenes!"
 readme = "README.md"
-license-files = ["LICENSE"]
+license = "GPL-3.0-or-later"
 requires-python = ">=3.10, <3.14"
 dependencies = [
     "librosa>=0.11.0",
