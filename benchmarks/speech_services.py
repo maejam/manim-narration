@@ -6,6 +6,7 @@ import tabulate
 
 from manim_narration.audio_utils import convert_to_wav
 from manim_narration.speech import (
+    ChatterboxService,
     CoquiService,
     GTTSService,
     KokoroService,
@@ -20,6 +21,7 @@ SPEECH_SERVICES = [
     ),
     GTTSService(),
     KokoroService(),
+    ChatterboxService(language_id="en"),
 ]
 NUM_EXECUTIONS = 10
 TEXT = (
@@ -62,10 +64,10 @@ if __name__ == "__main__":
         )
 
         # send result to build_markdown
-        service_name = type(speech_service).__name__
+        service_name = type(speech_service).__name__[:-7]
         md = markdown_generator.send(
             [
-                service_name[:-7],
+                service_name,
                 "",
                 "",
                 f"{round(res / NUM_EXECUTIONS, 2)} seconds",

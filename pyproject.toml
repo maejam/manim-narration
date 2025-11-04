@@ -23,7 +23,7 @@ dev = [
 ]
 
 [project.optional-dependencies]
-full = ["manim-narration[ctc]", "manim-narration[coqui]", "manim-narration[gtts]", "manim-narration[kokoro]"]
+full = ["manim-narration[ctc]", "manim-narration[chatterbox]", "manim-narration[coqui]", "manim-narration[gtts]", "manim-narration[kokoro]"]
 coqui = [
     "coqui-tts>=0.27.2",
 ]
@@ -39,6 +39,9 @@ ctc = [
     "ctc-forced-aligner",
     "hf-xet>=1.1.10",
     "torchcodec>=0.8.0",
+]
+chatterbox = [
+    "chatterbox",
 ]
 
 [project.entry-points."manim.plugins"]
@@ -63,6 +66,7 @@ source-exclude = [
 
 [tool.uv.sources]
 ctc-forced-aligner = { git = "https://github.com/MahmoudAshraf97/ctc-forced-aligner.git" }
+chatterbox = { git = "https://github.com/maejam/chatterbox.git" }
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
@@ -91,6 +95,7 @@ strict = true
 
 [[tool.mypy.overrides]]
 module = [
+    "chatterbox.*",
     "ctc_forced_aligner.*",
     "manim.*",
     "manim_narration.*",
@@ -98,6 +103,7 @@ module = [
     "TTS.*",
     "kokoro.*",
     "soundfile.*",
+    "torchaudio",
 ]
 
 ignore_missing_imports = true
