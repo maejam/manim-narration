@@ -54,3 +54,5 @@ class NarrationConfig(PlaceholderSettings):
 
     # top-level options
     verbosity: str = "{verbosity}"
+    render_narrations: bool = True
+    unrendered_narrations_duration: float = 2.0

@@ -4,6 +4,7 @@ from pathlib import Path
 import librosa
 import soundfile as sf
 
+from manim_narration._config.config_base import Config
 from manim_narration.utils import NarrationError
 
 
@@ -27,7 +28,11 @@ def get_duration(path: Path | str) -> float:
     Duration of the audio file in seconds.
 
     """
-    duration = librosa.get_duration(path=path)
+    duration = (
+        librosa.get_duration(path=path)
+        if Config.config.render_narrations
+        else Config.config.unrendered_narrations_duration
+    )
     return duration
 
 

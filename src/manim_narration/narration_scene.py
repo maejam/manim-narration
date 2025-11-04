@@ -151,6 +151,21 @@ class NarrationScene(m.Scene, Config):  # type: ignore[misc]
         The tracker object for this narration.
 
         """
+        if not self.config.render_narrations:
+            # return a Tracker object so that everything still works without actually
+            # generating the speech and computing an expensive alignment.
+            # Since alignments are cached in `audio_file_path.parent`, these will be
+            # cached in `config.cache.dir`.
+            audio_file_path = Path(self.config.cache.dir) / "unrendered.wav"
+            self.tracker = NarrationTracker(
+                self,
+                start_time=self.time,
+                alignment_service=InterpolationAligner(),
+                raw_text=text,
+                audio_file_path=audio_file_path,
+            )
+            return self.tracker
+
         # get services
         speech_service = self._get_speech_service_from_id(speech_service_id)
         alignment_service = self._get_alignment_service_from_id(alignment_service_id)
