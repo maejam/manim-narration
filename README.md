@@ -38,6 +38,7 @@ Check the `benchmarks/` directory to see how the statistics below are produced. 
 | GTTS       | Online  | en/fr/zh/pt/es         | 0.76 seconds         | [sample](benchmarks/narrations/GTTS.wav?raw=True)          |
 | Kokoro     | Offline | en/jp/zh/es/fr/hi/it/pt| 2.15 seconds         | [sample](benchmarks/narrations/Kokoro.wav?raw=True)        |
 | Chatterbox | Offline | 23 languages           | 39.19 seconds        | [sample](benchmarks/narrations/Chatterbox.wav?raw=True)    |
+
 <sub>*Coqui provides 70+ tts models. The one being benchmarked here is "xtts_v2"</sub>
 
 ### Available alignment services
