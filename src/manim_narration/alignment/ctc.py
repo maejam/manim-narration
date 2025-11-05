@@ -65,7 +65,11 @@ class CTCAligner(AlignmentService):
         self.batch_size = batch_size
 
     def align_chars(
-        self, text: str, char_offsets: tuple[int, ...], audio_file_path: Path
+        self,
+        text: str,
+        char_offsets: tuple[int, ...],
+        audio_file_path: Path,
+        audio_duration: float,
     ) -> tuple[float, ...]:
         device = "cuda" if torch.cuda.is_available() else "cpu"
 

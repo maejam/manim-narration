@@ -17,6 +17,7 @@ from manim_narration.tags import TagParser
 ALIGNMENT_SERVICES = [ManualAligner(), InterpolationAligner(), CTCAligner("eng")]
 NUM_EXECUTIONS = 10
 AUDIO_FILE = Path().cwd() / "benchmarks/reference_speech.wav"
+DURATION = 56.424
 TEXT = (
     'From Wikipedia: <bookmark mark="narration"/>Narration is the use of a written '
     'or spoken commentary to convey a story to an <bookmark mark="audience"/>audience. '
@@ -41,7 +42,9 @@ def benchmark_alignment_service() -> None:
     parser = TagParser()
     parser.feed(TEXT)
     char_offsets = tuple(tag.offset for tag in parser.tags)
-    aligned = alignment_service.align_chars(parser.text, char_offsets, AUDIO_FILE)
+    aligned = alignment_service.align_chars(
+        parser.text, char_offsets, AUDIO_FILE, DURATION
+    )
     distances = tuple((al - tr) ** 2 for al, tr in zip(aligned, TRUTH, strict=True))
     distance = math.sqrt(sum(distances))
 

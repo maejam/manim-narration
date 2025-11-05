@@ -40,7 +40,11 @@ class AlignmentService(ABC, Config):
 
     @abstractmethod
     def align_chars(
-        self, text: str, char_offsets: tuple[int, ...], audio_file_path: Path
+        self,
+        text: str,
+        char_offsets: tuple[int, ...],
+        audio_file_path: Path,
+        audio_duration: float,
     ) -> tuple[float, ...]:
         """Align character offsets from the original text with the generated speech.
 
@@ -54,6 +58,8 @@ class AlignmentService(ABC, Config):
             A tuple of character offsets in the text to align with the audio speech.
         audio_file_path
             The path to the audio file containing the generated speech.
+        audio_duration
+            The duration of the audio file.
 
         Returns
         -------
@@ -68,6 +74,7 @@ class AlignmentService(ABC, Config):
         text: str,
         char_offsets: tuple[int, ...],
         audio_file_path: Path,
+        audio_duration: float,
         alignment_data: AlignmentData,
     ) -> tuple[float, ...]:
         """Manage cache with character alignment.
@@ -84,6 +91,8 @@ class AlignmentService(ABC, Config):
             A tuple of character offsets in the text to align with the audio speech.
         audio_file_path
             The path to the audio file containing the generated speech.
+        audio_duration
+            The duration of the audio file.
         alignment_data
             The `typing.AlignmentData` instance representing this alignment process.
 
@@ -106,7 +115,9 @@ class AlignmentService(ABC, Config):
                 return tuple(json.load(json_file))
 
         # call concrete service
-        aligned_tuple = self.align_chars(text, char_offsets, audio_file_path)
+        aligned_tuple = self.align_chars(
+            text, char_offsets, audio_file_path, audio_duration
+        )
 
         # serialize to cache
         with json_file_path.open("w") as json_file:
@@ -120,6 +131,7 @@ class AlignmentService(ABC, Config):
         self,
         raw_text: str,
         audio_file_path: Path,
+        audio_duration: float,
     ) -> dict[str, float]:
         """Retrieve the timestamps for each bookmark in the text.
 
@@ -129,6 +141,8 @@ class AlignmentService(ABC, Config):
             The original text including the tags.
         audio_file_path
             The path to the audio file containing the generated speech.
+        audio_duration
+            The duration of the audio file.
 
         Returns
         -------
@@ -163,6 +177,7 @@ class AlignmentService(ABC, Config):
             parser.text,
             tuple(tag.offset for tag in parser.tags),
             audio_file_path,
+            audio_duration,
             alignment_data,
         )
 

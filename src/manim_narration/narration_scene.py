@@ -43,6 +43,8 @@ class NarrationScene(m.Scene, Config):  # type: ignore[misc]
         self.alignment_services: dict[str, AlignmentService] = {
             "default": InterpolationAligner()
         }
+        self.current_section_skip_narrations: bool | None = None
+        self.current_section_skipped_narrations_duration: float | None = None
 
     def render(self, preview: bool = False) -> None:
         try:
@@ -151,12 +153,26 @@ class NarrationScene(m.Scene, Config):  # type: ignore[misc]
         The tracker object for this narration.
 
         """
-        if not self.config.render_narrations:
+        self.skip_narrations = (
+            self.current_section_skip_narrations
+            if self.current_section_skip_narrations is not None
+            else self.config.skip_narrations
+        )
+        self.skipped_narrations_duration = (
+            self.current_section_skipped_narrations_duration
+            if self.current_section_skipped_narrations_duration is not None
+            else self.config.skipped_narrations_duration
+        )
+        if self.skip_narrations:
+            # TODO: find how to properly escape text
+            esc = text.replace("'", r"\'")
+            logger.info(f"Skipping narration: '{textwrap.shorten(esc, width=65)}'")
+
             # return a Tracker object so that everything still works without actually
             # generating the speech and computing an expensive alignment.
             # Since alignments are cached in `audio_file_path.parent`, these will be
             # cached in `config.cache.dir`.
-            audio_file_path = Path(self.config.cache.dir) / "unrendered.wav"
+            audio_file_path = Path(self.config.cache.dir) / "skipped.wav"
             self.tracker = NarrationTracker(
                 self,
                 start_time=self.time,
@@ -264,7 +280,11 @@ class NarrationScene(m.Scene, Config):  # type: ignore[misc]
         )
         logger.info("Aligning subcaption.")
         timestamps = aligner._align_chars_and_cache(
-            text, tuple(char_offsets), self.tracker.audio_file_path, alignment_data
+            text,
+            tuple(char_offsets),
+            self.tracker.audio_file_path,
+            self.tracker.duration,
+            alignment_data,
         )
         # compute durations=timestamps intervals
         ends = timestamps[1:] + (duration,)
@@ -373,3 +393,16 @@ class NarrationScene(m.Scene, Config):  # type: ignore[misc]
                 '(`text="..."`).'
             ) from None
         return alignment_service
+
+    def next_section(
+        self,
+        name: str = "unnamed",
+        section_type: str = m.DefaultSectionType.NORMAL,
+        skip_animations: bool = False,
+        skip_narrations: bool | None = None,
+        skipped_narrations_duration: float | None = None,
+    ) -> None:
+        """Add options to skip narrations for a given section."""
+        super().next_section(name, section_type, skip_animations)
+        self.current_section_skip_narrations = skip_narrations
+        self.current_section_skipped_narrations_duration = skipped_narrations_duration

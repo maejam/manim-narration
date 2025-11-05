@@ -1,5 +1,4 @@
 from pathlib import Path
-from unittest.mock import patch
 
 import pytest
 
@@ -20,6 +19,7 @@ from manim_narration.alignment import InterpolationAligner
 )
 def test_interpolator(offsets, duration, expected):
     i = InterpolationAligner()
-    with patch("manim_narration.audio_utils.get_duration") as mock_get_duration:
-        mock_get_duration.return_value = duration
-        assert i.align_chars("This is a len(25) string.", offsets, Path()) == expected
+    assert (
+        i.align_chars("This is a len(25) string.", offsets, Path(), duration)
+        == expected
+    )

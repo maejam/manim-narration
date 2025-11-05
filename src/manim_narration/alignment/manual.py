@@ -17,5 +17,6 @@ class ManualAligner(AlignmentService):
         text: str,
         char_offsets: tuple[int, ...],
         audio_file_path: Path,
+        audio_duration: float,
     ) -> tuple[float, ...]:
         return (0.0,) * len(char_offsets)

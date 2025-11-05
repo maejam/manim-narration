@@ -1,7 +1,5 @@
 from pathlib import Path
 
-from manim_narration import audio_utils as audio
-
 from .aligner_base import AlignmentService
 
 
@@ -19,9 +17,9 @@ class InterpolationAligner(AlignmentService):
         text: str,
         char_offsets: tuple[int, ...],
         audio_file_path: Path,
+        audio_duration: float,
     ) -> tuple[float, ...]:
-        duration = audio.get_duration(audio_file_path)
         timestamps = tuple(
-            round(duration * offset / len(text), 3) for offset in char_offsets
+            round(audio_duration * offset / len(text), 3) for offset in char_offsets
         )
         return timestamps

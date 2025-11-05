@@ -7,7 +7,11 @@ from manim_narration.alignment.aligner_base import AlignmentError, AlignmentServ
 def aligner():
     class Aligner(AlignmentService):
         def align_chars(
-            self, text: str, char_offsets: tuple[int, ...], audio_file_path
+            self,
+            text: str,
+            char_offsets: tuple[int, ...],
+            audio_file_path,
+            audio_duration: float,
         ) -> tuple[float, ...]:
             return (0.0, 1.0, 1.5)
 
@@ -23,7 +27,7 @@ def aligner():
 )
 def test_align_bookmarks_raises_when_wrong_tag_kind(aligner, text, tmp_path):
     with pytest.raises(AlignmentError, match="should be self-closing"):
-        aligner._align_bookmarks(text, tmp_path)
+        aligner._align_bookmarks(text, tmp_path, 10.0)
 
 
 @pytest.mark.parametrize(
@@ -34,7 +38,7 @@ def test_align_bookmarks_raises_when_wrong_tag_kind(aligner, text, tmp_path):
 )
 def test_align_bookmarks_raises_when_same_names(aligner, text, tmp_path):
     with pytest.raises(AlignmentError, match="should have a unique name"):
-        aligner._align_bookmarks(text, tmp_path)
+        aligner._align_bookmarks(text, tmp_path, 10.0)
 
 
 @pytest.mark.parametrize(
@@ -46,7 +50,7 @@ def test_align_bookmarks_raises_when_same_names(aligner, text, tmp_path):
 )
 def test_align_bookmarks_raises_when_no_mark_attribute(aligner, text, tmp_path):
     with pytest.raises(AlignmentError, match="must define a mark attribute"):
-        aligner._align_bookmarks(text, tmp_path)
+        aligner._align_bookmarks(text, tmp_path, 10.0)
 
 
 @pytest.mark.parametrize(
@@ -59,4 +63,8 @@ def test_align_bookmarks_raises_when_no_mark_attribute(aligner, text, tmp_path):
     ],
 )
 def test_align_bookmarks_returns_right_dict(aligner, text, tmp_path):
-    assert aligner._align_bookmarks(text, tmp_path) == {"A": 0.0, "B": 1.0, "C": 1.5}
+    assert aligner._align_bookmarks(text, tmp_path, 10.0) == {
+        "A": 0.0,
+        "B": 1.0,
+        "C": 1.5,
+    }

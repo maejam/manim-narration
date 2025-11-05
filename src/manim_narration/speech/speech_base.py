@@ -108,7 +108,7 @@ class SpeechService(ABC, Config):
         """
         # TODO: find how to properly escape text
         esc = text.replace("'", r"\'")
-        logger.info(f"Processing narration: '{textwrap.shorten(esc, width=70)}'")
+        logger.info(f"Processing narration: '{textwrap.shorten(esc, width=65)}'")
 
         # Get audio from cache if already generated
         speech_data: SpeechData = {

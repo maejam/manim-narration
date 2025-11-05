@@ -21,6 +21,7 @@ def scene():
     scene = Scene()
     scene.alignment_services = {"default": mock.Mock()}
     scene.alignment_services["default"]._align_bookmarks = mock.Mock()
+    scene.skip_narrations = False
     return scene
 
 

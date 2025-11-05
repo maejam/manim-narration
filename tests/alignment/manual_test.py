@@ -18,4 +18,6 @@ from manim_narration.alignment import ManualAligner
 )
 def test_manual_aligner(offsets, expected):
     ma = ManualAligner()
-    assert ma.align_chars("This is a len(25) string.", offsets, Path()) == expected
+    assert (
+        ma.align_chars("This is a len(25) string.", offsets, Path(), 10.0) == expected
+    )

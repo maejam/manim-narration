@@ -39,7 +39,11 @@ class NarrationTracker:
         self.audio_file_path = audio_file_path
 
         self.start_time = start_time
-        self.duration = get_duration(self.audio_file_path)
+        self.duration = (
+            get_duration(self.audio_file_path)
+            if not self.scene.skip_narrations
+            else self.scene.skipped_narrations_duration
+        )
         self.end_time = self.start_time + self.duration
         self.current_bookmark = "_origin_"
         self.bookmark_timestamps: dict[str, float] = {}
@@ -75,7 +79,7 @@ class NarrationTracker:
         bk_ts = self.bookmark_timestamps
         if bk_ts == {}:
             bk_ts = self.alignment_service._align_bookmarks(
-                self.raw_text, self.audio_file_path
+                self.raw_text, self.audio_file_path, self.duration
             )
             bk_ts = {"_origin_": 0.0, **bk_ts}
             self.bookmark_timestamps = bk_ts
