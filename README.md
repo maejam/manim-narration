@@ -22,6 +22,7 @@ Most of the very good ideas from the original library are still there:
 - Extensible: add new speech services, alignment services or tags (relatively) easily.
 - Possible to set more than one speech service: a scene with several characters, speaking different languages or with different voices for example.
 - Choose the service(s) to use to align text and speech (bookmarks and subcaptions) depending on your use case: manually / fast and not very accurate / slow and very accurate.
+- Skip the rendering of narrations globally via config options or per section (e.g. `self.next_section(skip_narrations=True, skipped_narrations_duration=5.0)`)
 
 Missing features:
 - recording service
