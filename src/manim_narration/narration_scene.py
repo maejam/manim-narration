@@ -153,16 +153,6 @@ class NarrationScene(m.Scene, Config):  # type: ignore[misc]
         The tracker object for this narration.
 
         """
-        self.skip_narrations = (
-            self.current_section_skip_narrations
-            if self.current_section_skip_narrations is not None
-            else self.config.skip_narrations
-        )
-        self.skipped_narrations_duration = (
-            self.current_section_skipped_narrations_duration
-            if self.current_section_skipped_narrations_duration is not None
-            else self.config.skipped_narrations_duration
-        )
         if self.skip_narrations:
             # TODO: find how to properly escape text
             esc = text.replace("'", r"\'")
@@ -406,3 +396,21 @@ class NarrationScene(m.Scene, Config):  # type: ignore[misc]
         super().next_section(name, section_type, skip_animations)
         self.current_section_skip_narrations = skip_narrations
         self.current_section_skipped_narrations_duration = skipped_narrations_duration
+
+    @property
+    def skip_narrations(self) -> bool:
+        skip_narrations = (
+            self.current_section_skip_narrations
+            if self.current_section_skip_narrations is not None
+            else self.config.skip_narrations
+        )
+        return skip_narrations
+
+    @property
+    def skipped_narrations_duration(self) -> float:
+        skipped_narrations_duration = (
+            self.current_section_skipped_narrations_duration
+            if self.current_section_skipped_narrations_duration is not None
+            else self.config.skipped_narrations_duration
+        )
+        return skipped_narrations_duration
