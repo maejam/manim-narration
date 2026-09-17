@@ -17,7 +17,7 @@ from manim_narration.typing import AlignmentData
 logger = utils.get_logger(__name__)
 
 
-class NarrationScene(m.Scene, Config):  # type: ignore[misc]
+class NarrationScene(m.Scene, Config):
     """Add narration to a scene.
 
     Attributes
@@ -46,9 +46,9 @@ class NarrationScene(m.Scene, Config):  # type: ignore[misc]
         self.current_section_skip_narrations: bool | None = None
         self.current_section_skipped_narrations_duration: float | None = None
 
-    def render(self, preview: bool = False) -> None:
+    def render(self, preview: bool = False) -> bool:
         try:
-            super().render(preview)
+            ret = super().render(preview)
         except ValueError as e:
             if "0 seconds which Manim cannot render." in str(e):
                 message = "An error occured.\n"
@@ -58,6 +58,7 @@ class NarrationScene(m.Scene, Config):  # type: ignore[misc]
                 message += str(self.tracker.bookmark_timestamps)
                 raise AlignmentError(message) from e
             raise e
+        return ret
 
     def set_speech_services(
         self,
