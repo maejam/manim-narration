@@ -76,7 +76,8 @@ class ChatterboxService(SpeechService):
             )
         else:
             model = ChatterboxMultilingualTTS.from_pretrained(
-                device=torch.device(self.device)
+                device=self.device,
+                t3_model="v3",  # pyright: ignore[reportArgumentType]
             )
             wav = model.generate(
                 text=text,
