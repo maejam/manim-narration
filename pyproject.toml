@@ -41,7 +41,7 @@ ctc = [
     "torchcodec>=0.8.0",
 ]
 chatterbox = [
-    "chatterbox",
+    "chatterbox-tts",
 ]
 
 [project.entry-points."manim.plugins"]
@@ -64,9 +64,14 @@ source-exclude = [
     # "docs/_build/",
 ]
 
+[tool.uv]
+override-dependencies = [
+    "click>=8.4.2",
+]
+
 [tool.uv.sources]
 ctc-forced-aligner = { git = "https://github.com/MahmoudAshraf97/ctc-forced-aligner.git" }
-chatterbox = { git = "https://github.com/maejam/chatterbox.git" }
+chatterbox-tts = { git = "https://github.com/maejam/chatterbox.git" }
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
