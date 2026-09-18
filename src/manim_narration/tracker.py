@@ -13,9 +13,8 @@ class NarrationTracker:
 
     Parameters
     ----------
-    start_time
-        The time elapsed since the beginning of the scene when the tracker is created
-        (as returned by `scene.time`).
+    scene
+        The scene this tracker belongs to.
     alignment_service
         The service used to align the bookmarks for this narration.
     raw_text
@@ -28,7 +27,6 @@ class NarrationTracker:
     def __init__(
         self,
         scene: "NarrationScene",
-        start_time: float,
         alignment_service: AlignmentService,
         raw_text: str,
         audio_file_path: Path,
@@ -38,6 +36,19 @@ class NarrationTracker:
         self.raw_text = raw_text
         self.audio_file_path = audio_file_path
 
+        self.current_bookmark = "_origin_"
+        self.bookmark_timestamps: dict[str, float] = {}
+
+    def _start(self, start_time: float) -> None:
+        """Start the tracker.
+
+        Parameters
+        ----------
+        start_time
+            The time elapsed since the beginning of the scene when the tracker is
+            started (as returned by `scene.time`).
+
+        """
         self.start_time = start_time
         self.duration = (
             get_duration(self.audio_file_path)
@@ -45,13 +56,9 @@ class NarrationTracker:
             else self.scene.skipped_narrations_duration
         )
         self.end_time = self.start_time + self.duration
-        self.current_bookmark = "_origin_"
-        self.bookmark_timestamps: dict[str, float] = {}
 
     @property
-    def remaining_duration(
-        self,
-    ) -> float:
+    def remaining_duration(self) -> float:
         """Return the remaining duration for this narration.
 
         Returns

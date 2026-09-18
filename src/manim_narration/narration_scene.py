@@ -90,14 +90,14 @@ class NarrationScene(m.Scene, Config):
         """
         self.alignment_services = alignment_services
 
-    @contextmanager
-    def narration(
+    def generate_narration(
         self,
         speech_service_id: str | None = None,
         alignment_service_id: str | None = None,
-        **kwargs: t.Any,
-    ) -> t.Generator[NarrationTracker, t.Any, None]:
-        """Add narration to a scene through a context manager.
+        *,
+        text: str = "",
+    ) -> NarrationTracker:
+        """Generate a narration to be played later.
 
         Parameters
         ----------
@@ -106,48 +106,10 @@ class NarrationScene(m.Scene, Config):
             declared in `set_speech_services`.
         alignment_service_id
             The identifier of the alignment service to be used. Defaults to the first
-            service declared in `set_alignment_services` (which is
-            `InterpolationAligner()` if `set_alignment_services` was never called).
-        kwargs
-            Other parameters passed to `add_narration`.
-
-        Yields
-        ------
-            The NarrationTracker object.
-
-        """
-        yield self.add_narration(speech_service_id, alignment_service_id, **kwargs)
-        self.wait_for_narration_to_finish()
-
-    def add_narration(
-        self,
-        speech_service_id: str | None = None,
-        alignment_service_id: str | None = None,
-        *,
-        text: str = "",
-        create_subcaption: bool = False,
-        subcaption: str = "",
-        **subcaption_kwargs: t.Any,
-    ) -> NarrationTracker:
-        """Add narration to the scene.
-
-        Parameters
-        ----------
-        speech_service_id
-            The identifier of the speech service to be used. Defaults to the first
-            service declared in `set_speech_services`.
-        alignment_service_id
-            The identifier of the alignment service to be used. Defaults to the first
-            service declared in `set_alignment_services` (which is
-            `InterpolationAligner()` if `set_alignment_services` was never called).
+            service declared in `set_alignment_services` or to `InterpolationAligner()`
+            if `set_alignment_services` was never called.
         text
             The text to be spoken.
-        create_subcaption
-            Whether to create subcaptions for this narration or not.
-        subcaption
-            Alternative subcaption text. Defaults to `text`.
-        subcaption_kwargs
-            Other keyword arguments passed to `add_sucaption_text`.
 
         Returns
         -------
@@ -155,9 +117,9 @@ class NarrationScene(m.Scene, Config):
 
         """
         if self.skip_narrations:
-            # TODO: find how to properly escape text
-            esc = text.replace("'", r"\'")
-            logger.info(f"Skipping narration: '{textwrap.shorten(esc, width=65)}'")
+            logger.info(
+                "Skipping narration: %s", repr(textwrap.shorten(text, width=65))
+            )
 
             # return a Tracker object so that everything still works without actually
             # generating the speech and computing an expensive alignment.
@@ -166,7 +128,6 @@ class NarrationScene(m.Scene, Config):
             audio_file_path = Path(self.config.cache.dir) / "skipped.wav"
             self.tracker = NarrationTracker(
                 self,
-                start_time=self.time,
                 alignment_service=InterpolationAligner(),
                 raw_text=text,
                 audio_file_path=audio_file_path,
@@ -188,28 +149,131 @@ class NarrationScene(m.Scene, Config):
         audio_file_path = speech_service._get_speech(clean_text)
         self.tracker = NarrationTracker(
             self,
-            start_time=self.time,
             alignment_service=alignment_service,
             raw_text=text,
             audio_file_path=audio_file_path,
         )
-        self.add_sound(str(audio_file_path))
-
-        if create_subcaption:
-            # clean remaining tags from text (e.g. ssml tags)
-            parser = tags.TagParser()
-            parser.feed(text)
-            clean_text = parser.text
-
-            subcaption = subcaption or clean_text
-
-            self.add_subcaption_text(
-                subcaption,
-                self.tracker.duration,
-                **subcaption_kwargs,
-            )
 
         return self.tracker
+
+    def add_narration(
+        self,
+        speech_service_id: str | None = None,
+        alignment_service_id: str | None = None,
+        *,
+        narration: NarrationTracker | None = None,
+        text: str = "",
+        create_subcaption: bool = False,
+        subcaption: str = "",
+        **subcaption_kwargs: t.Any,
+    ) -> NarrationTracker:
+        """Add narration to the scene.
+
+        Parameters
+        ----------
+        speech_service_id
+            The identifier of the speech service to be used. Defaults to the first
+            service declared in `set_speech_services`.
+        alignment_service_id
+            The identifier of the alignment service to be used. Defaults to the first
+            service declared in `set_alignment_services` or to `InterpolationAligner()`
+            if `set_alignment_services` was never called.
+        narration
+            A `NarrationTracker` object as returned by `generate_narration`.
+            It is an error to define both `narration` and `text` or none of them.
+        text
+            The text to be spoken.
+        create_subcaption
+            Whether to create subcaptions for this narration or not.
+        subcaption
+            Alternative subcaption text. Defaults to `text`.
+        subcaption_kwargs
+            Other keyword arguments passed to `add_sucaption_text`.
+
+        Returns
+        -------
+        The tracker object for this narration.
+
+        Raises
+        ------
+        ValueError
+            If neither `narration` nor `text` is defined, or if both are defined.
+
+        """
+        if narration and text:
+            raise ValueError("Only one of `narration` or `text` can be defined.")
+
+        if not narration and not text:
+            raise ValueError("At least one of `narration` or `text` must be defined.")
+
+        self.tracker = narration or self.generate_narration(
+            speech_service_id, alignment_service_id, text=text
+        )
+        audio_file_path = self.tracker.audio_file_path
+
+        self.tracker._start(self.time)
+
+        if not self.skip_narrations:
+            self.add_sound(str(audio_file_path))
+
+            if create_subcaption:
+                # clean remaining tags from text (e.g. ssml tags)
+                parser = tags.TagParser()
+                parser.feed(text)
+                clean_text = parser.text
+
+                subcaption = subcaption or clean_text
+
+                self.add_subcaption_text(
+                    subcaption,
+                    self.tracker.duration,
+                    **subcaption_kwargs,
+                )
+
+        return self.tracker
+
+    @contextmanager
+    def narration(
+        self,
+        speech_service_id: str | None = None,
+        alignment_service_id: str | None = None,
+        narration: NarrationTracker | None = None,
+        text: str = "",
+        **kwargs: t.Any,
+    ) -> t.Generator[NarrationTracker, t.Any, None]:
+        """Add narration to a scene through a context manager.
+
+        Parameters
+        ----------
+        speech_service_id
+            The identifier of the service to be used. Defaults to the first service
+            declared in `set_speech_services`.
+        alignment_service_id
+            The identifier of the alignment service to be used. Defaults to the first
+            service declared in `set_alignment_services` or to `InterpolationAligner()`
+            if `set_alignment_services` was never called.
+        narration
+            A `NarrationTracker` object as returned by `generate_narration`.
+            It is an error to define both `narration` and `text` or none of them.
+        text
+            The text to be spoken. It is an error to define both `narration` and `text`
+            or none of them.
+        kwargs
+            Other parameters passed to `add_narration`.
+
+        Yields
+        ------
+        The tracker object for this narration.
+
+        """
+        yield self.add_narration(
+            speech_service_id,
+            alignment_service_id,
+            narration=narration,
+            text=text,
+            **kwargs,
+        )
+        self.wait_for_narration_to_finish()
 
     def add_subcaption_text(
         self,
