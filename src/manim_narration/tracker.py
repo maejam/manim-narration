@@ -13,10 +13,6 @@ class NarrationTracker:
 
     Parameters
     ----------
-    scene
-        The scene this tracker belongs to.
-    alignment_service
-        The service used to align the bookmarks for this narration.
     raw_text
         The text to narrate, including the bookmarks.
     audio_file_path
@@ -26,30 +22,31 @@ class NarrationTracker:
 
     def __init__(
         self,
-        scene: "NarrationScene",
-        alignment_service: AlignmentService,
         raw_text: str,
         audio_file_path: Path,
     ) -> None:
-        self.scene = scene
-        self.alignment_service = alignment_service
         self.raw_text = raw_text
         self.audio_file_path = audio_file_path
 
         self.current_bookmark = "_origin_"
         self.bookmark_timestamps: dict[str, float] = {}
 
-    def _start(self, start_time: float) -> None:
+    def _start(
+        self, scene: "NarrationScene", alignment_service: AlignmentService
+    ) -> None:
         """Start the tracker.
 
         Parameters
         ----------
-        start_time
-            The time elapsed since the beginning of the scene when the tracker is
-            started (as returned by `scene.time`).
+        scene
+            The scene this tracker belongs to.
+        alignment_service
+            The service used to align the bookmarks for this narration.
 
         """
-        self.start_time = start_time
+        self.scene = scene
+        self.alignment_service = alignment_service
+        self.start_time = scene.time
         self.duration = (
             get_duration(self.audio_file_path)
             if not self.scene.skip_narrations

@@ -93,7 +93,6 @@ class NarrationScene(m.Scene, Config):
     def generate_narration(
         self,
         speech_service_id: str | None = None,
-        alignment_service_id: str | None = None,
         *,
         text: str = "",
     ) -> NarrationTracker:
@@ -104,10 +103,6 @@ class NarrationScene(m.Scene, Config):
         speech_service_id
             The identifier of the service to be used. Defaults to the first service
             declared in `set_speech_services`.
-        alignment_service_id
-            The identifier of the alignment service to be used. Defaults to the first
-            service declared in `set_alignment_services` or to `InterpolationAligner()`
-            if `set_alignment_services` was never called.
         text
             The text to be spoken.
 
@@ -127,16 +122,13 @@ class NarrationScene(m.Scene, Config):
             # cached in `config.cache.dir`.
             audio_file_path = Path(self.config.cache.dir) / "skipped.wav"
             self.tracker = NarrationTracker(
-                self,
-                alignment_service=InterpolationAligner(),
                 raw_text=text,
                 audio_file_path=audio_file_path,
             )
             return self.tracker
 
-        # get services
+        # get speech service
         speech_service = self._get_speech_service_from_id(speech_service_id)
-        alignment_service = self._get_alignment_service_from_id(alignment_service_id)
 
         # clean up text
         parser = tags.TagParser(tags_to_remove=self.config.tags.all_tags)
@@ -148,8 +140,6 @@ class NarrationScene(m.Scene, Config):
         # call service
         audio_file_path = speech_service._get_speech(clean_text)
         self.tracker = NarrationTracker(
-            self,
-            alignment_service=alignment_service,
             raw_text=text,
             audio_file_path=audio_file_path,
         )
@@ -207,11 +197,13 @@ class NarrationScene(m.Scene, Config):
             raise ValueError("At least one of `narration` or `text` must be defined.")
 
         self.tracker = narration or self.generate_narration(
-            speech_service_id, alignment_service_id, text=text
+            speech_service_id, text=text
         )
         audio_file_path = self.tracker.audio_file_path
 
-        self.tracker._start(self.time)
+        # get alignment service
+        alignment_service = self._get_alignment_service_from_id(alignment_service_id)
+        self.tracker._start(self, alignment_service=alignment_service)
 
         if not self.skip_narrations:
             self.add_sound(str(audio_file_path))
