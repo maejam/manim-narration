@@ -67,6 +67,7 @@ source-exclude = [
 [tool.uv]
 override-dependencies = [
     "click>=8.4.2",
+    "transformers==5.0", # coqui 0.27.5 not compatible with 5.1+ 
 ]
 
 [tool.uv.sources]
