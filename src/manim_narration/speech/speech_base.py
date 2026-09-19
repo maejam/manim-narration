@@ -90,7 +90,7 @@ class SpeechService(ABC, Config):
         """
         return audio_file_path
 
-    def _get_speech(self, text: str) -> Path:
+    def _get_speech(self, text: str, ignore_cache: bool = False) -> Path:
         """Orchestrate the speech generation.
 
         This method is a wrapper around `generate_speech` and is called from the scene
@@ -100,6 +100,9 @@ class SpeechService(ABC, Config):
         ----------
         text
             The tag free text to synthesize speech from.
+        ignore_cache
+            If ``True``, the narration will be generated even if it is already cached.
+            ``False`` by default.
 
         Returns
         -------
@@ -120,7 +123,7 @@ class SpeechService(ABC, Config):
         audio_file_path = self._get_path_to_file_in_cache(
             speech_data, file_basename + ".wav"
         )
-        if audio_file_path.exists():
+        if audio_file_path.exists() and not ignore_cache:
             logger.info(f"Returning speech from cache: '{audio_file_path}'")
             return audio_file_path
         else:

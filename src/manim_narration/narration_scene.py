@@ -99,6 +99,7 @@ class NarrationScene(m.Scene, Config):
         tags_to_remove: set[str],
         cache_dir: Path,
         skip_narration: bool,
+        ignore_cache: bool = False,
     ) -> NarrationTracker:
         """Generate a narration.
 
@@ -117,6 +118,9 @@ class NarrationScene(m.Scene, Config):
             The cache directory defined in the global config.
         skip_narration
             Whether the narration generation should be skipped or not.
+        ignore_cache
+            If ``True``, the narration will be generated even if it is already cached.
+            ``False`` by default.
 
         Returns
         -------
@@ -147,7 +151,9 @@ class NarrationScene(m.Scene, Config):
         clean_text = " ".join(clean_text.split())
 
         # call service
-        audio_file_path = speech_service._get_speech(clean_text)
+        audio_file_path = speech_service._get_speech(
+            clean_text, ignore_cache=ignore_cache
+        )
         tracker = NarrationTracker(
             raw_text=text,
             audio_file_path=audio_file_path,
@@ -160,6 +166,7 @@ class NarrationScene(m.Scene, Config):
         speech_service_id: str | None = None,
         *,
         text: str = "",
+        ignore_cache: bool = False,
     ) -> NarrationTracker:
         """Generate a narration to be played later.
 
@@ -170,6 +177,9 @@ class NarrationScene(m.Scene, Config):
             declared in `set_speech_services`.
         text
             The text to be spoken.
+        ignore_cache
+            If ``True``, the narration will be generated even if it is already cached.
+            ``False`` by default.
 
         Returns
         -------
@@ -186,6 +196,7 @@ class NarrationScene(m.Scene, Config):
             tags_to_remove=self.config.tags.all_tags,
             cache_dir=Path(self.config.cache.dir),
             skip_narration=self.skip_narrations,
+            ignore_cache=ignore_cache,
         )
 
         return tracker
@@ -196,6 +207,7 @@ class NarrationScene(m.Scene, Config):
         *,
         mode: t.Literal["multithreading", "multiprocessing"] = "multithreading",
         max_workers: int | None = None,
+        ignore_cache: bool = False,
         **texts: str,
     ) -> dict[str, NarrationTracker]:
         """Generate multiple narrations at once.
@@ -213,6 +225,9 @@ class NarrationScene(m.Scene, Config):
             `concurrent.futures` library.
         texts
             A mapping from narration string identifiers to the texts to be spoken.
+        ignore_cache
+            If ``True``, a narration will be generated even if is is already cached.
+            ``False`` by default.
 
         Returns
         -------
@@ -233,6 +248,7 @@ class NarrationScene(m.Scene, Config):
             tags_to_remove=self.config.tags.all_tags,
             cache_dir=Path(self.config.cache.dir),
             skip_narration=self.skip_narrations,
+            ignore_cache=ignore_cache,
         )
 
         with executor(max_workers=max_workers) as pool:
