@@ -1,7 +1,9 @@
 import itertools
 import textwrap
 import typing as t
+from concurrent.futures import ProcessPoolExecutor, ThreadPoolExecutor
 from contextlib import contextmanager
+from functools import partial
 from pathlib import Path
 
 import manim as m
@@ -90,6 +92,69 @@ class NarrationScene(m.Scene, Config):
         """
         self.alignment_services = alignment_services
 
+    @staticmethod
+    def _generate_narration(
+        text: str,
+        speech_service: SpeechService,
+        tags_to_remove: set[str],
+        cache_dir: Path,
+        skip_narration: bool,
+    ) -> NarrationTracker:
+        """Generate a narration.
+
+        Implemented as a staticmethod so that it can be used with multiprocessing
+        the Scene object being unpickleable.
+
+        Parameters
+        ----------
+        text
+            The text to be spoken.
+        speech_service
+            The speech service to be used.
+        tags_to_remove
+            The set of tags that should be removed from the raw text (e.g. "bookmark").
+        cache_dir
+            The cache directory defined in the global config.
+        skip_narration
+            Whether the narration generation should be skipped or not.
+
+        Returns
+        -------
+        The tracker object for this narration.
+
+        """
+        if skip_narration:
+            logger.info(
+                "Skipping narration: %s", repr(textwrap.shorten(text, width=65))
+            )
+
+            # return a Tracker object so that everything still works without actually
+            # generating the speech and computing an expensive alignment.
+            # Since alignments are cached in `audio_file_path.parent`, these will be
+            # cached in `config.cache.dir`.
+            audio_file_path = Path(cache_dir) / "skipped.wav"
+            tracker = NarrationTracker(
+                raw_text=text,
+                audio_file_path=audio_file_path,
+            )
+            return tracker
+
+        # clean up text
+        parser = tags.TagParser(tags_to_remove=tags_to_remove)
+        parser.feed(text)
+        clean_text = parser.text
+        # remove newlines and multiple consecutive spaces
+        clean_text = " ".join(clean_text.split())
+
+        # call service
+        audio_file_path = speech_service._get_speech(clean_text)
+        tracker = NarrationTracker(
+            raw_text=text,
+            audio_file_path=audio_file_path,
+        )
+
+        return tracker
+
     def generate_narration(
         self,
         speech_service_id: str | None = None,
@@ -111,40 +176,70 @@ class NarrationScene(m.Scene, Config):
         The tracker object for this narration.
 
         """
-        if self.skip_narrations:
-            logger.info(
-                "Skipping narration: %s", repr(textwrap.shorten(text, width=65))
-            )
-
-            # return a Tracker object so that everything still works without actually
-            # generating the speech and computing an expensive alignment.
-            # Since alignments are cached in `audio_file_path.parent`, these will be
-            # cached in `config.cache.dir`.
-            audio_file_path = Path(self.config.cache.dir) / "skipped.wav"
-            self.tracker = NarrationTracker(
-                raw_text=text,
-                audio_file_path=audio_file_path,
-            )
-            return self.tracker
-
         # get speech service
         speech_service = self._get_speech_service_from_id(speech_service_id)
 
-        # clean up text
-        parser = tags.TagParser(tags_to_remove=self.config.tags.all_tags)
-        parser.feed(text)
-        clean_text = parser.text
-        # remove newlines and multiple consecutive spaces
-        clean_text = " ".join(clean_text.split())
-
-        # call service
-        audio_file_path = speech_service._get_speech(clean_text)
-        self.tracker = NarrationTracker(
-            raw_text=text,
-            audio_file_path=audio_file_path,
+        # generate narration
+        tracker = self._generate_narration(
+            speech_service=speech_service,
+            text=text,
+            tags_to_remove=self.config.tags.all_tags,
+            cache_dir=Path(self.config.cache.dir),
+            skip_narration=self.skip_narrations,
         )
 
-        return self.tracker
+        return tracker
+
+    def generate_narrations(
+        self,
+        speech_service_id: str | None = None,
+        *,
+        mode: t.Literal["multithreading", "multiprocessing"] = "multithreading",
+        max_workers: int | None = None,
+        **texts: str,
+    ) -> dict[str, NarrationTracker]:
+        """Generate multiple narrations at once.
+
+        Parameters
+        ----------
+        speech_service_id
+            The identifier of the service to be used. Defaults to the first service
+            declared in `set_speech_services`.
+        mode
+            One of "multithreading" or "multiprocessing".
+        max_workers
+            Maximum number of simultaneous threads or processes.
+            Defaults to `None` which will resolve to the default value set in the
+            `concurrent.futures` library.
+        texts
+            A mapping from narration string identifiers to the texts to be spoken.
+
+        Returns
+        -------
+        A mapping from the string identifiers given in `texts` to the corresponding
+        tracker objects.
+
+        """
+        # get speech service
+        speech_service = self._get_speech_service_from_id(speech_service_id)
+
+        # generate narrations
+        executor = (
+            ThreadPoolExecutor if mode == "multithreading" else ProcessPoolExecutor
+        )
+        generate = partial(
+            self._generate_narration,
+            speech_service=speech_service,
+            tags_to_remove=self.config.tags.all_tags,
+            cache_dir=Path(self.config.cache.dir),
+            skip_narration=self.skip_narrations,
+        )
+
+        with executor(max_workers=max_workers) as pool:
+            trackers = list(pool.map(generate, texts.values()))
+
+        tracker_dict = dict(zip(texts.keys(), trackers, strict=True))
+        return tracker_dict
 
     def add_narration(
         self,
