@@ -55,7 +55,7 @@ def convert_to_wav(file_path: Path | str, rm_original: bool = True) -> Path:
     audio, sr = librosa.load(path, sr=None, mono=False)
     output_path = path.parent / path.stem
     wav_file = output_path.with_suffix(".wav")
-    sf.write(wav_file, audio.T, sr, subtype="PCM_16")
+    sf.write(wav_file, audio.T, int(sr), subtype="PCM_16")
     if rm_original:
         path.unlink()
     return wav_file
