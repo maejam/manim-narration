@@ -620,7 +620,7 @@ wheels = [
 [[package]]
 name = "chatterbox-tts"
 version = "0.1.7"
-source = { git = "https://github.com/maejam/chatterbox.git#6622ee8f6d66ee6d626af92b0d61340aea77f4f2" }
+source = { git = "https://github.com/maejam/chatterbox.git#ff7ea26b1fdd81c7aba251326759b5d1b070753b" }
 dependencies = [
     { name = "conformer" },
     { name = "diffusers" },
