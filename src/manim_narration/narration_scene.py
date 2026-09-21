@@ -1,4 +1,5 @@
 import itertools
+import multiprocessing
 import textwrap
 import typing as t
 from concurrent.futures import ProcessPoolExecutor, ThreadPoolExecutor
@@ -17,6 +18,9 @@ from manim_narration.tracker import NarrationTracker
 from manim_narration.typing import AlignmentData
 
 logger = utils.get_logger(__name__)
+
+# "fork" default hangs on Linux
+multiprocessing.set_start_method("spawn", force=True)
 
 
 class NarrationScene(m.Scene, Config):
@@ -95,7 +99,10 @@ class NarrationScene(m.Scene, Config):
     @staticmethod
     def _generate_narration(
         text: str,
-        speech_service: SpeechService,
+        *,
+        speech_service_instance: SpeechService | None = None,
+        speech_service_class: type[SpeechService] | None = None,
+        speech_service_kwargs: dict[str, t.Any] | None = None,
         tags_to_remove: set[str],
         cache_dir: Path,
         skip_narration: bool,
@@ -103,6 +110,8 @@ class NarrationScene(m.Scene, Config):
     ) -> NarrationTracker:
         """Generate a narration.
 
+        Helper method. DO NOT USE DIRECTLY. Use `generate_narration` and
+        `generate_narrations` instead.
         Implemented as a staticmethod so that it can be used with multiprocessing
         the Scene object being unpickleable.
 
@@ -110,8 +119,16 @@ class NarrationScene(m.Scene, Config):
         ----------
         text
             The text to be spoken.
-        speech_service
-            The speech service to be used.
+        speech_service_instance
+            The speech service instance to be used. If defined, it will be used directly
+            instead of recreating the service from `speech_service_class` and
+            `speech_service_kwargs`. Prefered for multithreading and sequential.
+        speech_service_class
+            If `speech_service_instance` is not defined, the service will be recreated
+            by each worker. Preferred for multiprocessing since most services are
+            not pickleable. Also avoids resource leaks.
+        speech_service_kwargs
+            The keyword arguments to recreate the service with as a dictionary.
         tags_to_remove
             The set of tags that should be removed from the raw text (e.g. "bookmark").
         cache_dir
@@ -150,7 +167,18 @@ class NarrationScene(m.Scene, Config):
         # remove newlines and multiple consecutive spaces
         clean_text = " ".join(clean_text.split())
 
-        # call service
+        # get and call service
+        if speech_service_instance is not None:
+            speech_service = speech_service_instance
+        else:
+            if speech_service_class is None:
+                raise ValueError(
+                    "At least one of `speech_service_instance` or "
+                    "`speech_service_class` must be defined."
+                )
+            kwargs = speech_service_kwargs or {}
+            speech_service = speech_service_class(**kwargs)
+
         audio_file_path = speech_service._get_speech(
             clean_text, ignore_cache=ignore_cache
         )
@@ -191,7 +219,7 @@ class NarrationScene(m.Scene, Config):
 
         # generate narration
         tracker = self._generate_narration(
-            speech_service=speech_service,
+            speech_service_instance=speech_service,
             text=text,
             tags_to_remove=self.config.tags.all_tags,
             cache_dir=Path(self.config.cache.dir),
@@ -205,7 +233,9 @@ class NarrationScene(m.Scene, Config):
         self,
         speech_service_id: str | None = None,
         *,
-        mode: t.Literal["multithreading", "multiprocessing"] = "multithreading",
+        mode: t.Literal[
+            "sequential", "multithreading", "multiprocessing"
+        ] = "multithreading",
         max_workers: int | None = None,
         ignore_cache: bool = False,
         **texts: str,
@@ -218,7 +248,8 @@ class NarrationScene(m.Scene, Config):
             The identifier of the service to be used. Defaults to the first service
             declared in `set_speech_services`.
         mode
-            One of "multithreading" or "multiprocessing".
+            One of ``sequential``, ``multithreading`` or ``multiprocessing``.
+            Defaults to ``multithreading``.
         max_workers
             Maximum number of simultaneous threads or processes.
             Defaults to `None` which will resolve to the default value set in the
@@ -238,17 +269,31 @@ class NarrationScene(m.Scene, Config):
         # get speech service
         speech_service = self._get_speech_service_from_id(speech_service_id)
 
-        # generate narrations
-        executor = (
-            ThreadPoolExecutor if mode == "multithreading" else ProcessPoolExecutor
-        )
         generate = partial(
             self._generate_narration,
-            speech_service=speech_service,
+            speech_service_instance=speech_service
+            if mode in ["sequential", "multithreading"]
+            else None,
+            speech_service_class=type(speech_service),
+            speech_service_kwargs=speech_service.service_kwargs,
             tags_to_remove=self.config.tags.all_tags,
             cache_dir=Path(self.config.cache.dir),
             skip_narration=self.skip_narrations,
             ignore_cache=ignore_cache,
+        )
+
+        # sequential
+        # NOTE: could also be achieved with multithreading max_workers=1,
+        # but would add threading overhead
+        if mode == "sequential":
+            tracker_dict = {}
+            for key, text in texts.items():
+                tracker_dict[key] = generate(text)
+            return tracker_dict
+
+        # multithreading and multiprocessing
+        executor = (
+            ThreadPoolExecutor if mode == "multithreading" else ProcessPoolExecutor
         )
 
         with executor(max_workers=max_workers) as pool:
