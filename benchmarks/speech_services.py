@@ -19,6 +19,9 @@ path = Path(__file__).parent / "narrations/temp/"
 path.mkdir(exist_ok=True, parents=True)
 config.cache.dir = path
 
+MULTITHREADING_MAX_WORKERS = 3
+MULTIPROCESSING_MAX_WORKERS = 2
+
 SPEECH_SERVICES = {
     "coqui": CoquiService(
         "tts_models/multilingual/multi-dataset/xtts_v2",
@@ -32,7 +35,7 @@ SPEECH_SERVICES = {
 EXECUTION_MODES: list[t.Literal["sequential", "multithreading", "multiprocessing"]] = [
     "sequential",
     "multithreading",
-    "multiprocessing",
+    # "multiprocessing",
 ]
 TEXTS = [
     "Narration number one",
@@ -40,6 +43,11 @@ TEXTS = [
     "Narration number three",
     "Narration number four",
     "Narration number five",
+    "Narration number six",
+    "Narration number seven",
+    "Narration number eight",
+    "Narration number nine",
+    "Narration number ten",
 ]
 
 scene = NarrationScene()
@@ -55,12 +63,18 @@ def benchmark_speech_service(
         f"\n=============== Benchmarking: {type(speech_service).__name__[:-7]} / {mode}"
         " ==============="
     )
+    max_workers = (
+        MULTITHREADING_MAX_WORKERS
+        if mode == "multithreading"
+        else MULTIPROCESSING_MAX_WORKERS
+    )
     t1 = time.perf_counter()
     tasks = {f"task{i}": text for i, text in enumerate(TEXTS)}
 
     results = scene.generate_narrations(
         speech_service_id,
         mode=mode,
+        max_workers=max_workers,
         ignore_cache=True,
         **tasks,  # pyright: ignore[reportArgumentType]
     )
