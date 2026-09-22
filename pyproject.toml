@@ -2,6 +2,9 @@
 name = "manim-narration"
 version = "1.1.0"
 description = "Add narrations to your manim scenes!"
+authors = [
+      {name="maejam", email = "git.rejoice553@passmail.net"},
+]
 readme = "README.md"
 license = "GPL-3.0-or-later"
 requires-python = ">=3.10, <3.14"
@@ -55,7 +58,7 @@ build-backend = "uv_build"
 source-include = [
     "benchmarks",
     # "docs/",
-    # "examples/",
+    "examples/",
     "tests/",
     # "CHANGES.rst",
     "uv.lock"
@@ -91,7 +94,7 @@ filterwarnings = [
 
 [tool.coverage.run]
 branch = true
-source = ["src/manim_narration", "tests", "benchmarks"]
+source = ["src", "tests", "benchmarks"]
 
 [tool.mypy]
 files = ["src", "benchmarks"]
@@ -116,6 +119,7 @@ ignore_missing_imports = true
 
 [tool.ruff]
 src = ["src"]
+extend-exclude = ["examples"]
 fix = true
 show-fixes = true
 output-format = "full"
@@ -147,3 +151,14 @@ ignore = [
     "D",    # missing docstring
     "F841", # unused-variable
 ]
+
+[tool.ruff.lint.pydocstyle]
+convention = "numpy"
+
+[tool.commitizen]
+name = "cz_conventional_commits"
+tag_format = "v$version"
+version_scheme = "pep440"
+version_provider = "uv"
+update_changelog_on_bump = true
+major_version_zero = true
