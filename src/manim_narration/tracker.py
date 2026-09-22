@@ -93,7 +93,11 @@ class NarrationTracker:
         try:
             target_bk_ts = bk_ts[target_mark]
         except KeyError as e:
-            raise AlignmentError(f"The bookmark `{target_mark}` does not exist.") from e
+            raise AlignmentError(
+                f"The bookmark `{target_mark}` does not exist. "
+                "Did you forget to capture the current narration in a variable ? "
+                "(`with self.narration(...) as narration:`)"
+            ) from e
 
         duration = target_bk_ts - current_bk_ts
         return duration
