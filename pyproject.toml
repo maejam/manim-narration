@@ -1,6 +1,6 @@
 [project]
 name = "manim-narration"
-version = "1.1.0"
+version = "1.2.0"
 description = "Add narrations to your manim scenes!"
 authors = [
       {name="maejam", email = "git.rejoice553@passmail.net"},
