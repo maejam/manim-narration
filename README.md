@@ -92,8 +92,7 @@ For now there is no dedicated documentation. See the in-code documentation and t
 
 <sub>Activate the sound under the video.</sub>
 
-https://github.com/user-attachments/assets/c582194b-2c0d-4449-97f8-d7ee4320f248
-
+https://github.com/user-attachments/assets/d08047e7-b19a-425b-9d04-f3fbb0632add
 
 ```python
 from manim import *
