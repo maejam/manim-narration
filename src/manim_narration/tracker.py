@@ -31,6 +31,13 @@ class NarrationTracker:
         self.current_bookmark = "_origin_"
         self.bookmark_timestamps: dict[str, float] = {}
 
+    def __str__(self) -> str:
+        max_len = 50
+        res = f'{type(self).__name__}(text="{self.raw_text[:max_len]}")'
+        if len(self.raw_text) > max_len:
+            res += " [...]"
+        return res
+
     def _start(
         self, scene: "NarrationScene", alignment_service: AlignmentService
     ) -> None:
