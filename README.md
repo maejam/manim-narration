@@ -130,7 +130,6 @@ class GettingStarted(NarrationScene):
         with self.narration(
             "fr",
             text=fr_txt,
-            create_subcaption=True,
         ) as narration:
             self.play(
                 Write(Text(fr_txt, font_size=30).shift(DOWN)),
