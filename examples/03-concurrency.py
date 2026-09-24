@@ -31,8 +31,8 @@ class GettingStarted(NarrationScene):
         self.hello = self.generate_narration(text="Hello there!")
 
         # Generate multiple narrations using multithreading.
-        # Returns a dictionary with each task name as the key and the resulting
-        # tracker object as the value.
+        # Returns a SimpleNamespace object with each task name as an attribute and the
+        # resulting tracker object as the value.
         # Depending on the speech service used and your machine, you may encounter
         # issues with multithreading. If so, limit the number of simultaneaous workers
         # with the `max_worker` parameter.
@@ -51,16 +51,16 @@ class GettingStarted(NarrationScene):
         # play using regular method - the only difference is that the context manager
         # automatically waits for the end of the narration before moving on.
         # `add_narration` does not: this can be useful in some circumstances.
-        narration = self.add_narration(narration=self.narrations["one"])
+        narration = self.add_narration(narration=self.narrations.one)
         print(narration)
         # NarrationTracker(text="Narration number one")
 
         self.wait_for_narration_to_finish()
 
-        narration = self.add_narration(narration=self.narrations["two"])
+        narration = self.add_narration(narration=self.narrations.two)
         print(narration)
         # NarrationTracker(text="Narration number two")
 
-        narration = self.add_narration(narration=self.narrations["three"])
+        narration = self.add_narration(narration=self.narrations.three)
         print(narration)
         # NarrationTracker(text="Narration number three")

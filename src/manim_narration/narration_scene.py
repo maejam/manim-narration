@@ -6,6 +6,7 @@ from concurrent.futures import ProcessPoolExecutor, ThreadPoolExecutor
 from contextlib import contextmanager
 from functools import partial
 from pathlib import Path
+from types import SimpleNamespace
 
 import manim as m
 
@@ -239,7 +240,7 @@ class NarrationScene(m.Scene, Config):
         max_workers: int | None = None,
         ignore_cache: bool = False,
         **texts: str,
-    ) -> dict[str, NarrationTracker]:
+    ) -> SimpleNamespace:
         """Generate multiple narrations at once.
 
         Parameters
@@ -262,8 +263,9 @@ class NarrationScene(m.Scene, Config):
 
         Returns
         -------
-        A mapping from the string identifiers given in `texts` to the corresponding
-        tracker objects.
+        A SimpleNamespace object where each attribute name corresponds to a key from
+        ``**texts``, and each attribute value is the tracker object for the generated
+        narration.
 
         """
         # get speech service
@@ -286,10 +288,10 @@ class NarrationScene(m.Scene, Config):
         # NOTE: could also be achieved with multithreading max_workers=1,
         # but would add threading overhead
         if mode == "sequential":
-            tracker_dict = {}
+            ns = SimpleNamespace()
             for key, text in texts.items():
-                tracker_dict[key] = generate(text)
-            return tracker_dict
+                setattr(ns, key, generate(text))
+            return ns
 
         # multithreading and multiprocessing
         executor = (
@@ -300,7 +302,8 @@ class NarrationScene(m.Scene, Config):
             trackers = list(pool.map(generate, texts.values()))
 
         tracker_dict = dict(zip(texts.keys(), trackers, strict=True))
-        return tracker_dict
+        ns = SimpleNamespace(**tracker_dict)
+        return ns
 
     def add_narration(
         self,
