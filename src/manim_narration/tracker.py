@@ -5,7 +5,7 @@ from manim_narration.alignment.aligner_base import AlignmentError, AlignmentServ
 from manim_narration.audio_utils import get_duration
 
 if t.TYPE_CHECKING:
-    from manim_narration.narration_scene import NarrationScene
+    from manim_narration.narration_scene import NarrationMixin
 
 
 class NarrationTracker:
@@ -39,7 +39,7 @@ class NarrationTracker:
         return res
 
     def _start(
-        self, scene: "NarrationScene", alignment_service: AlignmentService
+        self, scene: "NarrationMixin", alignment_service: AlignmentService
     ) -> None:
         """Start the tracker.
 
@@ -53,7 +53,7 @@ class NarrationTracker:
         """
         self.scene = scene
         self.alignment_service = alignment_service
-        self.start_time = scene.time
+        self.start_time = scene.time  # type: ignore[attr-defined]
         self.duration = (
             get_duration(self.audio_file_path)
             if not self.scene.skip_narrations
@@ -70,7 +70,7 @@ class NarrationTracker:
         The remaining duration for this narration in seconds.
 
         """
-        remaining_duration: float = max((self.end_time - self.scene.time), 0.0)
+        remaining_duration: float = max((self.end_time - self.scene.time), 0.0)  # type: ignore[attr-defined]
         return remaining_duration
 
     def duration_until_bookmark(self, target_mark: str) -> float:

@@ -24,8 +24,11 @@ logger = utils.get_logger(__name__)
 multiprocessing.set_start_method("spawn", force=True)
 
 
-class NarrationScene(m.Scene, Config):
+class NarrationMixin(Config):
     """Add narration to a scene.
+
+    This Mixin class must be used with a Scene subclass (Scene, ThreeDScene...).
+    Inherit the Mixin first: `class MyScene(NarrationMixin, Scene): ...`
 
     Attributes
     ----------
@@ -39,7 +42,15 @@ class NarrationScene(m.Scene, Config):
         by calling `NarrationScene.set_alignment_services`. If this method is not
         called, an InterpolationAligner instance will be used as the default aligner.
 
+    See Also
+    --------
+    NarrationScene
+        A concrete class that combines NarrationMixin and manim.Scene.
+
     """
+
+    # NOTE: type checking a complex Mixin is very tricky. No clean solution exists yet,
+    # => type: ignore directives are used where necessary.
 
     def __init__(self, **kwargs: t.Any) -> None:
         super().__init__(**kwargs)
@@ -55,7 +66,9 @@ class NarrationScene(m.Scene, Config):
 
     def render(self, preview: bool = False) -> bool:
         try:
-            ret = super().render(preview)
+            ret = super().render(preview)  # type: ignore[misc]
+            return t.cast(bool, ret)
+
         except ValueError as e:
             if "0 seconds which Manim cannot render." in str(e):
                 message = "An error occured.\n"
@@ -65,7 +78,6 @@ class NarrationScene(m.Scene, Config):
                 message += str(self.tracker.bookmark_timestamps)
                 raise AlignmentError(message) from e
             raise e
-        return ret
 
     def set_speech_services(
         self,
@@ -365,7 +377,7 @@ class NarrationScene(m.Scene, Config):
         self.tracker._start(self, alignment_service=alignment_service)
 
         if not self.skip_narrations:
-            self.add_sound(str(audio_file_path))
+            self.add_sound(str(audio_file_path))  # type: ignore[attr-defined]
 
             if create_subcaption:
                 # clean remaining tags from text (e.g. ssml tags)
@@ -458,7 +470,7 @@ class NarrationScene(m.Scene, Config):
         """
         # fast track for short text
         if len(text) <= max_subcaption_len:
-            self.add_subcaption(text, duration)
+            self.add_subcaption(text, duration)  # type: ignore[attr-defined]
             return
 
         # split and regroup
@@ -499,7 +511,7 @@ class NarrationScene(m.Scene, Config):
         )
         # add per chunk subcaption
         for offset, dur, chunk in zip(timestamps, durations, flattened, strict=True):
-            self.add_subcaption(
+            self.add_subcaption(  # type: ignore[attr-defined]
                 chunk,
                 duration=dur - subcaption_buff,
                 offset=offset,
@@ -537,7 +549,7 @@ class NarrationScene(m.Scene, Config):
 
         """
         duration = max(1 / m.config["frame_rate"], duration)
-        self.wait(duration)
+        self.wait(duration)  # type: ignore[attr-defined]
 
     def _get_speech_service_from_id(
         self, speech_service_id: str | None
@@ -609,7 +621,7 @@ class NarrationScene(m.Scene, Config):
         skipped_narrations_duration: float | None = None,
     ) -> None:
         """Add options to skip narrations for a given section."""
-        super().next_section(name, section_type, skip_animations)
+        super().next_section(name, section_type, skip_animations)  # type: ignore[misc]
         self.current_section_skip_narrations = skip_narrations
         self.current_section_skipped_narrations_duration = skipped_narrations_duration
 
@@ -630,3 +642,6 @@ class NarrationScene(m.Scene, Config):
             else self.config.skipped_narrations_duration
         )
         return skipped_narrations_duration
+
+
+class NarrationScene(NarrationMixin, m.Scene): ...
