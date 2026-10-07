@@ -17,7 +17,7 @@ Most of the very good ideas from the original library are still there:
 ## What is different, then?
 
 - Up-to-date dependencies.
-- Largely tested (python3.10->3.13) to ensure code quality.
+- Largely tested (python3.11 -> 3.14) to ensure code quality.
 - Configurable programmatically or through environment variables, a dotenv file, pyproject.toml or toml config files.
 - Extensible: add new speech services, alignment services or tags (relatively) easily.
 - Possible to set more than one speech service: a scene with several characters, speaking different languages or with different voices for example.
@@ -76,6 +76,7 @@ cd myproject
 ```
 uv add git+https://github.com/maejam/manim-narration.git[full]
 ```
+Requires `Python >= 3.11, < 3.15` and `manim >= 0.19`  
 
 
 ## Documentation

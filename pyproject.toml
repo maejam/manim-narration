@@ -7,7 +7,7 @@ authors = [
 ]
 readme = "README.md"
 license = "GPL-3.0-or-later"
-requires-python = ">=3.10, <3.14"
+requires-python = ">=3.10, <3.15"
 dependencies = [
     "librosa>=0.11.0",
     "manim>=0.19.0",
@@ -85,11 +85,9 @@ markers = [
 ]
 filterwarnings = [
     "error",
-    # "ignore:The '__version__' attribute is deprecated and will be removed in Click 9.1:DeprecationWarning",# cloup
-    "ignore:invalid escape sequence:SyntaxWarning", # pydub
+    "ignore:.*invalid escape sequence:SyntaxWarning", # pydub
     "ignore:invalid escape sequence:DeprecationWarning", # pydub (<3.12)
     "ignore:'audioop' is deprecated and slated for removal:DeprecationWarning", # audioop
-    'ignore:datetime.datetime.utcnow\(\) is deprecated:DeprecationWarning',
 ]
 
 [tool.coverage.run]
